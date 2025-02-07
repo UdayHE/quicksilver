@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'io.github.udayhe.quicksilver'
+version = '1.0-SNAPSHOT'
+sourceCompatibility = '22'
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = 'io.github.udayhe.quicksilver.QuickSilverServer'
+}
+
+dependencies {
+    // JUnit for testing
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // Logging dependencies
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.4.12'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass.get()
+        )
+    }
+
+    // Ensure JAR includes dependencies for standalone execution
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // UTF-8 support for logs/messages
+}
