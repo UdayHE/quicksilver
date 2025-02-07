@@ -9,7 +9,7 @@ import static io.github.udayhe.quicksilver.constant.Constants.OK;
 
 public class Shutdown implements Command {
 
-    private static final Logger log = LoggerFactory.getLogger(Set.class);
+    private static final Logger log = LoggerFactory.getLogger(Shutdown.class);
     private final QuickSilverDB db;
 
     public Shutdown(QuickSilverDB db) {
