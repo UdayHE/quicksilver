@@ -20,7 +20,7 @@ public class Config {
         try (InputStream input = QuickSilverServer.class.getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
             if (input == null) {
                 log.error("config.properties not found. Using default port 6379");
-                return 6379;
+                return DEFAULT_PORT;
             }
             properties.load(input);
             return Integer.parseInt(properties.getProperty(CONFIG_SERVER_PORT, String.valueOf(DEFAULT_PORT)));
