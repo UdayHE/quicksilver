@@ -2,6 +2,8 @@ package io.github.udayhe.quicksilver.constant;
 
 public class Constants {
 
+    private Constants() {}
+
     public static final String OK = "OK";
     public static final String NULL = "NULL";
     public static final String SET = "SET";
@@ -11,9 +13,12 @@ public class Constants {
     public static final String EXIT = "EXIT";
     public static final String BYE = "BYE";
     public static final String SPACE = " ";
+
+    //Environment-Variables
     public static final String ENV_QUICKSILVER_PORT = "QUICKSILVER_PORT";
 
 
+    //Config
     public static final String CONFIG_SERVER_PORT = "server.port";
     public static final String CONFIG_FILE_NAME = "config.properties";
 

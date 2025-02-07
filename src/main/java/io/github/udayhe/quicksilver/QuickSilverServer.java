@@ -50,7 +50,6 @@ public class QuickSilverServer {
     private void handleClient(Socket socket) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-
             String line;
             while ((line = in.readLine()) != null) {
                 log.debug("📩 Received command: {}", line);
