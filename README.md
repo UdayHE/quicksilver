@@ -3,12 +3,12 @@
 QuickSilver is a high-performance, in-memory key-value store with sharding, persistence, and multi-threaded client handling. Designed for speed, scalability, and flexibility, it supports multiple database backends (InMemoryDB, ShardedDB), and persists data to disk.
 
 ## 📌 Features
-✅ In-Memory Storage – Fast key-value operations
-✅ Sharding Support – Distributes data across multiple instances
-✅ LRU Eviction – Removes least-recently used entries when full
-✅ Persistence – Saves and loads data from disk
-✅ Multi-threaded – Uses a thread pool for efficient client handling
-✅ Command Pattern – Extensible command execution
+✅ In-Memory Storage – Fast key-value operations  <br>
+✅ Sharding Support – Distributes data across multiple instances  <br>
+✅ LRU Eviction – Removes least-recently used entries when full  <br>
+✅ Persistence – Saves and loads data from disk  <br>
+✅ Multi-threaded – Uses a thread pool for efficient client handling  <br>
+✅ Command Pattern – Extensible command execution  <br>
 
 ## 🚀 Getting Started
 
@@ -54,5 +54,5 @@ shard.size=100
 | EXIT | Closes the connection|EXIT
 
 ## 📜 License
-Apache License Version 2.0
+Apache License Version 2.0 <br>
 https://github.com/UdayHE/Quicksilver/blob/master/LICENSE
