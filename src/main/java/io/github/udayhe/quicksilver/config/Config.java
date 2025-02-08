@@ -39,5 +39,13 @@ public class Config {
     public String getDBType() {
         return properties.getProperty(CONFIG_DB_TYPE, IN_MEMORY.name());
     }
+
+    public int getTotalShards() {
+        return Integer.parseInt(properties.getProperty(CONFIG_DB_TOTAL_SHARD, String.valueOf(DEFAULT_TOTAL_SHARD)));
+    }
+
+    public int getShardSize() {
+        return Integer.parseInt(properties.getProperty(CONFIG_DB_SHARD_SIZE, String.valueOf(DEFAULT_SHARD_SIZE)));
+    }
 }
 

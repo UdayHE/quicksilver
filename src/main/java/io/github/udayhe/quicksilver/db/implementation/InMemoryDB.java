@@ -20,19 +20,18 @@ public class InMemoryDB<K, V> implements DB<K,V>, Serializable {
     private final int maxSize;
     private final Map<K, V> store;
     private final ConcurrentHashMap<K, Long> expirationMap = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService expirationService = ThreadPoolManager.getInstance().getScheduler();
-    private BiConsumer<K, V> evictionListener = (key, value) -> {}; // Default no-op listener
 
+    private transient ScheduledExecutorService expirationService = ThreadPoolManager.getInstance().getScheduler();
+    private transient BiConsumer<K, V> evictionListener = (key, _) -> {};
 
     public InMemoryDB(int maxSize) {
         this.maxSize = maxSize;
         this.store = new LinkedHashMap<>(maxSize, 0.75f, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-                boolean shouldRemove = size() > maxSize;
-                if (shouldRemove) {
+                boolean shouldRemove = size() > InMemoryDB.this.maxSize; // Enforce max size
+                if (shouldRemove)
                     evictionListener.accept(eldest.getKey(), eldest.getValue());
-                }
                 return shouldRemove;
             }
         };
@@ -122,4 +121,22 @@ public class InMemoryDB<K, V> implements DB<K,V>, Serializable {
             log.error("❌ Error loading database", e);
         }
     }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject(); // Serialize default fields (store, expirationMap, maxSize)
+        log.info("💾 Serializing InMemoryDB...");
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject(); // Deserialize default fields
+        log.info("🔄 Deserializing InMemoryDB...");
+
+        // Reinitialize non-serializable fields
+        expirationService = ThreadPoolManager.getInstance().getScheduler();
+        evictionListener = (key, _) -> {}; // Reset eviction listener
+        startExpirationTask(); // Restart background expiration task
+    }
+
 }
