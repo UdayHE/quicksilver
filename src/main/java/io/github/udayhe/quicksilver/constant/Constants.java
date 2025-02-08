@@ -14,6 +14,7 @@ public class Constants {
 
     //Config
     public static final String CONFIG_SERVER_PORT = "server.port";
+    public static final String CONFIG_DB_TYPE = "db.type";
     public static final String CONFIG_FILE_NAME = "config.properties";
 
 

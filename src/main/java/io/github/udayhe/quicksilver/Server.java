@@ -3,6 +3,8 @@ package io.github.udayhe.quicksilver;
 import io.github.udayhe.quicksilver.command.CommandRegistry;
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
+import io.github.udayhe.quicksilver.db.enums.DBType;
+import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.threadpool.ThreadPoolManager;
 import org.slf4j.Logger;
 
@@ -16,17 +18,19 @@ import java.net.Socket;
 import static io.github.udayhe.quicksilver.command.enums.Command.EXIT;
 import static io.github.udayhe.quicksilver.command.enums.Command.FLUSH;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
+import static io.github.udayhe.quicksilver.util.LogoUtil.printLogo;
 import static java.lang.System.getenv;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class Server<K, V> {
 
     private static final Logger log = getLogger(Server.class);
-    private final DB<K, V> db = new DB<>();
+    private final DB<K, V> db;
     private final int port;
 
-    public Server(int port) {
+    public Server(int port, DB<K, V> db) {
         this.port = port;
+        this.db = db;
         addShutdownHook();
     }
 
@@ -34,10 +38,13 @@ public class Server<K, V> {
         int port = getPort(args);
         port = getPortFromEnvironmentVariable(port);
         port = allowOverrideFromArgs(args, port);
-        new Server(port).start();
+        DBType dbType = DBType.valueOf(new Config().getDBType().toUpperCase());
+        DB db = getDatabase(dbType);
+        new Server(port, db).start();
     }
 
     public void start() {
+        printLogo();
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             log.info("🚀 QuickSilverServer DB started on port {}", port);
             while (true) {
@@ -108,12 +115,20 @@ public class Server<K, V> {
 
     private static int getPort(String[] args) {
         Config config = new Config();
-        int port = config.getPortFromConfig();
+        int port = config.getPort();
         port = getPortFromEnvironmentVariable(port);
         port = allowOverrideFromArgs(args, port);
         return port;
     }
 
+
+    /**
+     * Override port from commandline arguments
+     *
+     * @param args
+     * @param port
+     * @return port
+     */
     private static int allowOverrideFromArgs(String[] args, int port) {
         if (args.length > 0) {
             try {
@@ -125,6 +140,13 @@ public class Server<K, V> {
         return port;
     }
 
+
+    /**
+     * Fetch port from QUICKSILVER_PORT environment variable
+     *
+     * @param port
+     * @return port
+     */
     private static int getPortFromEnvironmentVariable(int port) {
         String envPort = getenv(ENV_QUICKSILVER_PORT);
         if (envPort != null) {
@@ -147,4 +169,11 @@ public class Server<K, V> {
             log.info("✅ Thread pool shut down successfully.");
         }));
     }
+
+    private static DB<?, ?> getDatabase(DBType dbType) {
+        return switch (dbType) {
+            case IN_MEMORY -> new InMemoryDB<>();
+        };
+    }
+
 }
