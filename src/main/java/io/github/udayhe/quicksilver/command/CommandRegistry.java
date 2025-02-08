@@ -1,34 +1,29 @@
 package io.github.udayhe.quicksilver.command;
 
-import io.github.udayhe.quicksilver.command.implementation.Del;
-import io.github.udayhe.quicksilver.command.implementation.Flush;
-import io.github.udayhe.quicksilver.command.implementation.Get;
-import io.github.udayhe.quicksilver.command.implementation.Set;
-import io.github.udayhe.quicksilver.command.implementation.Shutdown;
-import io.github.udayhe.quicksilver.db.QuickSilverDB;
+import io.github.udayhe.quicksilver.command.implementation.*;
+import io.github.udayhe.quicksilver.db.DB;
 
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.udayhe.quicksilver.constant.Constants.*;
+import static io.github.udayhe.quicksilver.command.enums.Command.*;
 
-public class CommandRegistry {
+public class CommandRegistry<K, V> {
+    private final Map<String, Command<K, V>> commands = new HashMap<>();
 
-    private final Map<String, Command> commands = new HashMap<>();
-
-    public CommandRegistry(QuickSilverDB db) {
-        commands.put(SET, new Set(db));
-        commands.put(GET, new Get(db));
-        commands.put(DEL, new Del(db));
-        commands.put(FLUSH, new Flush(db));
-        commands.put(SHUTDOWN, new Shutdown(db));
-        commands.put(EXIT, args -> BYE);
+    public CommandRegistry(DB<K, V> db, Socket socket) {
+        commands.put(SET.name(), new Set<>(db));
+        commands.put(GET.name(), new Get<>(db));
+        commands.put(DEL.name(), new Del<>(db));
+        commands.put(FLUSH.name(), new Flush<>(db));
+        commands.put(EXIT.name(), new Exit<>(socket));
     }
 
-    public String executeCommand(String command, String[] args) {
-        Command cmd = commands.get(command.toUpperCase());
+    public String executeCommand(String command, K key, V value) {
+        Command<K, V> cmd = commands.get(command.toUpperCase());
         if (cmd != null) {
-            return cmd.execute(args);
+            return cmd.execute(key, value);
         }
         return "ERROR: Unknown command";
     }

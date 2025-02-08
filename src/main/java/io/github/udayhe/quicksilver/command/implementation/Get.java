@@ -1,29 +1,24 @@
 package io.github.udayhe.quicksilver.command.implementation;
 
 import io.github.udayhe.quicksilver.command.Command;
-import io.github.udayhe.quicksilver.db.QuickSilverDB;
+import io.github.udayhe.quicksilver.db.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.github.udayhe.quicksilver.constant.Constants.NULL;
-
-public class Get implements Command {
+public class Get<K, V> implements Command<K, V> {
 
     private static final Logger log = LoggerFactory.getLogger(Get.class);
-    private final QuickSilverDB db;
+    private final DB<K, V> db;
 
-    public Get(QuickSilverDB db) {
+    public Get(DB<K, V> db) {
         this.db = db;
     }
 
     @Override
-    public String execute(String[] args) {
-        if (args.length == 1) {
-            Object value = db.get(args[0]);
-            log.info("📤 GET command: {} -> {}", args[0], value);
-            return value != null ? value.toString() : NULL;
-        }
-        return "ERROR: Invalid GET command";
+    public String execute(K key, V unused) {
+        V value = db.get(key);
+        log.info("📤 GET command: {} -> {}", key, value);
+        return value != null ? value.toString() : "NULL";
     }
 }
 

@@ -12,7 +12,7 @@ repositories {
 }
 
 application {
-    mainClass = 'io.github.udayhe.quicksilver.QuickSilverServer'
+    mainClass = 'io.github.udayhe.quicksilver.Server'
 }
 
 dependencies {

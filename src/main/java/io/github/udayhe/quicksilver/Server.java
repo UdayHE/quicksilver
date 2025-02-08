@@ -2,9 +2,9 @@ package io.github.udayhe.quicksilver;
 
 import io.github.udayhe.quicksilver.command.CommandRegistry;
 import io.github.udayhe.quicksilver.config.Config;
-import io.github.udayhe.quicksilver.db.QuickSilverDB;
+import io.github.udayhe.quicksilver.db.DB;
+import io.github.udayhe.quicksilver.threadpool.ThreadPoolManager;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,25 +13,28 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static io.github.udayhe.quicksilver.command.enums.Command.EXIT;
+import static io.github.udayhe.quicksilver.command.enums.Command.FLUSH;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
-import static java.lang.System.*;
+import static java.lang.System.getenv;
+import static org.slf4j.LoggerFactory.getLogger;
 
-public class QuickSilverServer {
+public class Server<K, V> {
 
-    private static final Logger log = LoggerFactory.getLogger(QuickSilverServer.class);
-    private final QuickSilverDB db = new QuickSilverDB();
-    private final CommandRegistry commandRegistry = new CommandRegistry(db);
+    private static final Logger log = getLogger(Server.class);
+    private final DB<K, V> db = new DB<>();
     private final int port;
 
-    public QuickSilverServer(int port) {
+    public Server(int port) {
         this.port = port;
+        addShutdownHook();
     }
 
     public static void main(String[] args) {
         int port = getPort(args);
         port = getPortFromEnvironmentVariable(port);
         port = allowOverrideFromArgs(args, port);
-        new QuickSilverServer(port).start();
+        new Server(port).start();
     }
 
     public void start() {
@@ -48,29 +51,58 @@ public class QuickSilverServer {
     }
 
     private void handleClient(Socket socket) {
+        CommandRegistry<K, V> commandRegistry = new CommandRegistry<>(db, socket);
+
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+
             String line;
             while ((line = in.readLine()) != null) {
                 log.debug("📩 Received command: {}", line);
-
                 String[] parts = line.split(SPACE);
                 String command = parts[0].toUpperCase();
-                String[] args = new String[parts.length - 1];
-                arraycopy(parts, 1, args, 0, args.length);
 
-                String response = commandRegistry.executeCommand(command, args);
+                if (exit(socket, command, out)) return;
+                if (flush(command, commandRegistry, out)) continue;
+                if (invalidCommand(parts, out)) continue;
+
+                K key = (K) parts[1];
+                V value = (parts.length > 2) ? (V) parts[2] : null;
+                String response = commandRegistry.executeCommand(command, key, value);
                 out.println(response);
-
-                if (command.equalsIgnoreCase(EXIT)) {
-                    log.info("🔌 Client disconnected: {}", socket.getRemoteSocketAddress());
-                    socket.close();
-                    return;
-                }
             }
         } catch (IOException e) {
             log.error("❌ Client communication error", e);
+        } catch (ClassCastException e) {
+            log.error("❌ Type conversion error: Ensure correct key-value types", e);
         }
+    }
+
+    private static boolean invalidCommand(String[] parts, PrintWriter out) {
+        if (parts.length < 2) {
+            out.println("ERROR: Invalid command format");
+            return true;
+        }
+        return false;
+    }
+
+    private static <K, V> boolean flush(String command, CommandRegistry<K, V> commandRegistry, PrintWriter out) {
+        if (command.equalsIgnoreCase(FLUSH.name())) {
+            String response = commandRegistry.executeCommand(command, null, null);
+            out.println(response);
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean exit(Socket socket, String command, PrintWriter out) throws IOException {
+        if (command.equalsIgnoreCase(EXIT.name())) {
+            log.info("🔌 Client disconnected: {}", socket.getRemoteSocketAddress());
+            out.println(BYE);
+            socket.close();
+            return true;
+        }
+        return false;
     }
 
 
@@ -105,5 +137,14 @@ public class QuickSilverServer {
         return port;
     }
 
+    /**
+     * Adds a shutdown hook to ensure graceful termination of the thread pool.
+     */
+    private void addShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("🛑 Server shutting down...");
+            ThreadPoolManager.getInstance().shutdown();
+            log.info("✅ Thread pool shut down successfully.");
+        }));
+    }
 }
-

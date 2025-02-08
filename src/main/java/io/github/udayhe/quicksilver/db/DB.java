@@ -1,30 +1,31 @@
 package io.github.udayhe.quicksilver.db;
 
+import io.github.udayhe.quicksilver.threadpool.ThreadPoolManager;
+
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.udayhe.quicksilver.constant.Constants.CORE_POOL_SIZE;
+import static java.lang.System.currentTimeMillis;
 
-public class QuickSilverDB {
+public class DB<K, V> {
 
-    private final ConcurrentHashMap<String, Object> store = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Long> expirationMap = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService expirationService = Executors.newScheduledThreadPool(CORE_POOL_SIZE);
+    private final ConcurrentHashMap<K, V> store = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<K, Long> expirationMap = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService expirationService = ThreadPoolManager.getInstance().getScheduler();
 
-    public QuickSilverDB() {
+    public DB() {
         startExpirationTask();
     }
 
-    public void set(String key, Object value, long ttlMillis) {
+    public void set(K key, V value, long ttlMillis) {
         store.put(key, value);
         if (ttlMillis > 0) {
-            expirationMap.put(key, System.currentTimeMillis() + ttlMillis);
+            expirationMap.put(key, currentTimeMillis() + ttlMillis);
         }
     }
 
-    public Object get(String key) {
+    public V get(K key) {
         if (isExpired(key)) {
             store.remove(key);
             expirationMap.remove(key);
@@ -33,23 +34,20 @@ public class QuickSilverDB {
         return store.get(key);
     }
 
-    public void delete(String key) {
+    public void delete(K key) {
         store.remove(key);
         expirationMap.remove(key);
     }
 
-    public void shutdown() {
-        expirationService.shutdown();
-    }
 
-    private boolean isExpired(String key) {
+    private boolean isExpired(K key) {
         Long expiry = expirationMap.get(key);
-        return expiry != null && System.currentTimeMillis() > expiry;
+        return expiry != null && currentTimeMillis() > expiry;
     }
 
     private void startExpirationTask() {
         expirationService.scheduleAtFixedRate(() -> {
-            long now = System.currentTimeMillis();
+            long now = currentTimeMillis();
             expirationMap.forEach((key, expiry) -> {
                 if (expiry < now) {
                     store.remove(key);

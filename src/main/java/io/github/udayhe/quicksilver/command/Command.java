@@ -1,6 +1,6 @@
 package io.github.udayhe.quicksilver.command;
 
-public interface Command {
+public interface Command<K, V> {
 
-    String execute(String[] args);
+    String execute(K key, V value);
 }

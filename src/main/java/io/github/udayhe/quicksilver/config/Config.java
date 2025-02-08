@@ -1,23 +1,23 @@
 package io.github.udayhe.quicksilver.config;
 
-import io.github.udayhe.quicksilver.QuickSilverServer;
+import io.github.udayhe.quicksilver.Server;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class Config {
 
-    private static final Logger log = LoggerFactory.getLogger(Config.class);
+    private static final Logger log = getLogger(Config.class);
 
     public int getPortFromConfig() {
         Properties properties = new Properties();
 
-        try (InputStream input = QuickSilverServer.class.getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
+        try (InputStream input = Server.class.getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
             if (input == null) {
                 log.error("config.properties not found. Using default port 6379");
                 return DEFAULT_PORT;
