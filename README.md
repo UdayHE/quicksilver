@@ -48,11 +48,11 @@ shard.size=100
 
 | Command | Description | Examle |
 | ------ | ------ | ------ |
-| SET key value | Stores a value |SET username Uday
-| GET key | Retrieves a value|GET username
-| DEL key | Deletes a key |DEL username
-| FLUSH | Clears all data |FLUSH
-| EXIT | Closes the connection|EXIT
+| `SET key value` | Stores a value |SET username Uday
+| `GET key` | Retrieves a value|GET username
+|` DEL key` | Deletes a key |DEL username
+| `FLUSH` | Clears all data |FLUSH
+| `EXIT` | Closes the connection|EXIT
 
 ## 📜 License
 Apache License Version 2.0 <br>
