@@ -22,9 +22,6 @@ public class CommandRegistry<K, V> {
 
     public String executeCommand(String command, K key, V value) {
         Command<K, V> cmd = commands.get(command.toUpperCase());
-        if (cmd != null) {
-            return cmd.execute(key, value);
-        }
-        return "ERROR: Unknown command";
+        return cmd != null ? cmd.execute(key, value) : "ERROR: Unknown command";
     }
 }

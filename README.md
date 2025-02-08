@@ -1,6 +1,7 @@
 # 🚀 QuickSilver
 ## In-Memory Distributed Database
-QuickSilver is a high-performance, in-memory key-value store with sharding, persistence, and multi-threaded client handling. Designed for speed, scalability, and flexibility, it supports multiple database backends (InMemoryDB, ShardedDB), and persists data to disk.
+QuickSilver is an open-source high-performance, in-memory key-value store with sharding, persistence, and multi-threaded client handling. <br> 
+Designed for speed, scalability, and flexibility, it supports multiple database backends (InMemoryDB, ShardedDB), and persists data to disk.<br>
 
 ## 📌 Features
 ✅ In-Memory Storage – Fast key-value operations  <br>
