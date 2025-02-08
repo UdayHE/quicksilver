@@ -10,6 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.ToIntFunction;
 
 public class ShardedDB<K, V> implements DB<K, V>, Serializable {
+
     private static final Logger log = LoggerFactory.getLogger(ShardedDB.class);
     private final List<InMemoryDB<K, V>> shards;
     private transient ToIntFunction<K> hashFunction;
