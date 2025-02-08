@@ -2,9 +2,9 @@ package io.github.udayhe.quicksilver.threadpool;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static io.github.udayhe.quicksilver.constant.Constants.CORE_POOL_SIZE;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class ThreadPoolManager {
 
@@ -26,7 +26,7 @@ public class ThreadPoolManager {
     public void shutdown() {
         try {
             scheduler.shutdown();
-            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS))
+            if (!scheduler.awaitTermination(5, SECONDS))
                 scheduler.shutdownNow();
         } catch (InterruptedException e) {
             scheduler.shutdownNow();

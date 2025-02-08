@@ -38,9 +38,13 @@ public class Server<K, V> {
         int port = getPort(args);
         port = getPortFromEnvironmentVariable(port);
         port = allowOverrideFromArgs(args, port);
+
+        // Determine DB Type
         DBType dbType = DBType.valueOf(new Config().getDBType().toUpperCase());
+
+        // Initialize DB Instance
         DB db = getDatabase(dbType);
-        new Server(port, db).start();
+        new Server<>(port, db).start();
     }
 
     public void start() {
@@ -112,7 +116,6 @@ public class Server<K, V> {
         return false;
     }
 
-
     private static int getPort(String[] args) {
         Config config = new Config();
         int port = config.getPort();
@@ -121,9 +124,8 @@ public class Server<K, V> {
         return port;
     }
 
-
     /**
-     * Override port from commandline arguments
+     * Override port from command-line arguments
      *
      * @param args
      * @param port
@@ -139,7 +141,6 @@ public class Server<K, V> {
         }
         return port;
     }
-
 
     /**
      * Fetch port from QUICKSILVER_PORT environment variable
@@ -165,15 +166,29 @@ public class Server<K, V> {
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("🛑 Server shutting down...");
+            if (db instanceof InMemoryDB<K, V> memoryDB) {
+                log.info("💾 Saving DB before shutdown...");
+                memoryDB.saveToDisk("backup.db");
+            }
             ThreadPoolManager.getInstance().shutdown();
             log.info("✅ Thread pool shut down successfully.");
         }));
     }
 
+    /**
+     * Initialize the appropriate DB instance based on DBType
+     *
+     * @param dbType The database type
+     * @return The database instance
+     */
     private static DB<?, ?> getDatabase(DBType dbType) {
         return switch (dbType) {
-            case IN_MEMORY -> new InMemoryDB<>();
+            case IN_MEMORY -> {
+                InMemoryDB<String, String> db = new InMemoryDB<>(100); // LRU max size = 100
+               // db.loadFromDisk("backup.db");
+                db.setEvictionListener((key, value) -> log.info("🔥 Key Evicted: {} -> {}", key, value));
+                yield db;
+            }
         };
     }
-
 }
