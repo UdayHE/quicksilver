@@ -29,10 +29,10 @@ cd Quicksilver
 java -jar build/libs/Quicksilver-1.0-SNAPSHOT.jar
 ```
 
-Default port: 6379
+🔌 4. Default Port: `6379` <br>
 Set custom port:
 ```sh
-java -jar build/libs/quicksilver.jar 7000
+java -jar build/libs/Quicksilver-1.0-SNAPSHOT.jar 7000
 ```
 
 ## 🛠 Configuration
