@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 
 import static io.github.udayhe.quicksilver.constant.Constants.BACKUP_DB;
 import static io.github.udayhe.quicksilver.constant.Constants.ENV_QUICKSILVER_PORT;
-import static io.github.udayhe.quicksilver.util.LogoUtil.printLogo;
+import static io.github.udayhe.quicksilver.util.LogoUtil.getLogo;
 import static java.lang.System.getenv;
 
 public class Server<K, V> {
@@ -47,7 +47,7 @@ public class Server<K, V> {
     }
 
     public void start() {
-        printLogo();
+        System.out.println(getLogo());
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             log.info("🚀 QuickSilverServer DB started on port {}", port);
             while (true) {

@@ -11,6 +11,7 @@ import java.net.Socket;
 import static io.github.udayhe.quicksilver.command.enums.Command.EXIT;
 import static io.github.udayhe.quicksilver.command.enums.Command.FLUSH;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
+import static io.github.udayhe.quicksilver.util.LogoUtil.getLogo;
 
 public class ClientHandler<K, V> implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
@@ -30,6 +31,7 @@ public class ClientHandler<K, V> implements Runnable {
 
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+             out.println(getLogo());
 
             String line;
             while ((line = in.readLine()) != null) {
