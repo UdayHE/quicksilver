@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutorService;
 import static io.github.udayhe.quicksilver.command.enums.Command.*;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
-import static io.github.udayhe.quicksilver.util.LogoUtil.getLogo;
 import static java.lang.System.getenv;
 
 public class Server<K, V> {
@@ -57,7 +56,7 @@ public class Server<K, V> {
     }
 
     public void start() {
-        System.out.println(getLogo());
+        System.out.println(LOGO);
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             log.info("🚀 QuickSilverServer DB started on port {}", port);
             registerInCluster();
@@ -85,7 +84,7 @@ public class Server<K, V> {
                  PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
                 String line;
-                out.println(getLogo());
+                out.println(LOGO);
                 while ((line = in.readLine()) != null) {
                     log.debug("📩 Received command: {}", line);
                     String[] parts = line.trim().split(SPACE);

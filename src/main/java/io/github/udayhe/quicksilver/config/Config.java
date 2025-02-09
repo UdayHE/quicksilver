@@ -13,7 +13,7 @@ import static io.github.udayhe.quicksilver.db.enums.DBType.IN_MEMORY;
 public class Config {
 
     private static final Logger log = LoggerFactory.getLogger(Config.class);
-    private static final Config INSTANCE = new Config(); // ✅ Singleton instance
+    private static final Config INSTANCE = new Config();
     private final Properties properties = new Properties();
 
     private Config() { // ✅ Private constructor to prevent external instantiation

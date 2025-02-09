@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import static io.github.udayhe.quicksilver.constant.Constants.ERROR;
+
 public class ClusterClient {
 
     private static final Logger log = LoggerFactory.getLogger(ClusterClient.class);
@@ -33,7 +35,7 @@ public class ClusterClient {
         } catch (IOException e) {
             log.error("❌ Failed to communicate with node: {}", node, e);
         }
-        return "ERROR";
+        return ERROR;
     }
 
 }

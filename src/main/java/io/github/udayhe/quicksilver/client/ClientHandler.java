@@ -9,13 +9,15 @@ import io.github.udayhe.quicksilver.db.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 import static io.github.udayhe.quicksilver.command.enums.Command.*;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
-import static io.github.udayhe.quicksilver.util.LogoUtil.getLogo;
 
 public class ClientHandler<K, V> implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
@@ -42,7 +44,7 @@ public class ClientHandler<K, V> implements Runnable {
         CommandRegistry<K, V> commandRegistry = new CommandRegistry<>(db, clusterManager, socket);
 
         try {
-            out.println(getLogo());
+            out.println(LOGO);
             String line;
             while ((line = readCommand()) != null) {
                 log.debug("📩 Received command: {}", line);
