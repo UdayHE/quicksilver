@@ -10,7 +10,10 @@ import org.slf4j.LoggerFactory;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 
 public class DatabaseFactory {
+
     private static final Logger log = LoggerFactory.getLogger(DatabaseFactory.class);
+
+    private DatabaseFactory() {}
 
     /**
      * Creates the appropriate DB instance based on DBType
@@ -27,7 +30,7 @@ public class DatabaseFactory {
                 return db;
             }
             case SHARDED -> {
-                Config config = new Config();
+                Config config = Config.getInstance();
                 int numShards = config.getTotalShards();
                 int shardSize = config.getShardSize();
 

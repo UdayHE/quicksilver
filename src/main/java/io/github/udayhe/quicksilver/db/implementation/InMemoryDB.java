@@ -122,6 +122,11 @@ public class InMemoryDB<K, V> implements DB<K,V>, Serializable {
         }
     }
 
+    @Override
+    public Map<K, V> getAll() {
+        return this.store;
+    }
+
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject(); // Serialize default fields (store, expirationMap, maxSize)

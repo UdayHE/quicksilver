@@ -5,7 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.ToIntFunction;
 
@@ -42,8 +44,17 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
     @Override
     public V get(K key) {
         int shardIndex = getShardIndex(key);
-        return shards.get(shardIndex).get(key);
+        Map<K, V> shard = shards.get(shardIndex).getAll();
+
+        if (shard.containsKey(key)) {
+            log.info("📤 GET command: Found key {} in shard {}", key, shardIndex);
+            return shard.get(key);
+        } else {
+            log.warn("⚠️ GET command: Key {} not found in shard {}", key, shardIndex);
+            return null;
+        }
     }
+
 
     @Override
     public void delete(K key) {
@@ -72,6 +83,14 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
             shards.get(i).loadFromDisk(baseFilename + "_shard" + i + ".db");
         }
         log.info("🔄 All shards loaded from disk");
+    }
+
+    @Override
+    public Map<K, V> getAll() {
+        Map<K, V> all = new HashMap<>();
+        for(InMemoryDB<K, V> inMemoryDB: this.shards)
+            all.putAll(inMemoryDB.getAll());
+        return all;
     }
 
     @Serial

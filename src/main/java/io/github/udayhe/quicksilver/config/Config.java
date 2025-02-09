@@ -1,7 +1,7 @@
 package io.github.udayhe.quicksilver.config;
 
-import io.github.udayhe.quicksilver.Server;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,19 +9,23 @@ import java.util.Properties;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.db.enums.DBType.IN_MEMORY;
-import static org.slf4j.LoggerFactory.getLogger;
 
 public class Config {
 
-    private static final Logger log = getLogger(Config.class);
-    private static final Properties properties = new Properties();
+    private static final Logger log = LoggerFactory.getLogger(Config.class);
+    private static final Config INSTANCE = new Config(); // ✅ Singleton instance
+    private final Properties properties = new Properties();
 
-    static {
+    private Config() { // ✅ Private constructor to prevent external instantiation
         loadProperties();
     }
 
-    private static void loadProperties() {
-        try (InputStream input = Server.class.getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
+    public static Config getInstance() { // ✅ Static method to access singleton
+        return INSTANCE;
+    }
+
+    private void loadProperties() {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
             if (input == null) {
                 log.warn("⚠️ config.properties not found. Using default values.");
                 return;
@@ -48,4 +52,5 @@ public class Config {
         return Integer.parseInt(properties.getProperty(CONFIG_DB_SHARD_SIZE, String.valueOf(DEFAULT_SHARD_SIZE)));
     }
 }
+
 

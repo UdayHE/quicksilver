@@ -10,6 +10,7 @@ Designed for speed, scalability, and flexibility, it supports multiple database 
 ✅ Persistence – Saves and loads data from disk  <br>
 ✅ Multi-threaded – Uses a thread pool for efficient client handling  <br>
 ✅ Command Pattern – Extensible command execution  <br>
+✅ Cluster Support – Distribute data across multiple nodes  <br>
 
 ## 📂 Project Structure
 ```shell

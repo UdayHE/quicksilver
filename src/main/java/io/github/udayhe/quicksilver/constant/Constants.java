@@ -9,6 +9,7 @@ public class Constants {
     public static final String SPACE = " ";
     public static final String BACKUP_DB = "backup.db";
     public static final String SHARDED_BACKUP = "sharded_backup";
+    public static final String LOCALHOST = "localhost";
 
     //Environment-Variables
     public static final String ENV_QUICKSILVER_PORT = "QUICKSILVER_PORT";

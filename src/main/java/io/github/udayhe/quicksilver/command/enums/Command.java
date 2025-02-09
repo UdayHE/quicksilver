@@ -5,5 +5,6 @@ public enum Command {
     DEL,
     GET,
     FLUSH,
+    DUMP,
     EXIT
 }
