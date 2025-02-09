@@ -8,7 +8,7 @@ import io.github.udayhe.quicksilver.command.CommandRegistry;
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
 import io.github.udayhe.quicksilver.db.DatabaseFactory;
-import io.github.udayhe.quicksilver.db.enums.DBType;
+import io.github.udayhe.quicksilver.enums.DBType;
 import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
 import io.github.udayhe.quicksilver.threadpool.ThreadPoolManager;
@@ -23,7 +23,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 
-import static io.github.udayhe.quicksilver.command.enums.Command.*;
+import static io.github.udayhe.quicksilver.enums.Command.*;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 import static java.lang.System.getenv;

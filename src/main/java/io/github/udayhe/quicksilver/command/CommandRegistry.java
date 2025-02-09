@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.udayhe.quicksilver.command.enums.Command.*;
+import static io.github.udayhe.quicksilver.enums.Command.*;
 
 public class CommandRegistry<K, V> {
     private final Map<String, Command<K, V>> commands = new HashMap<>();

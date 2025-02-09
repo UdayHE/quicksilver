@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import static io.github.udayhe.quicksilver.command.enums.Command.*;
+import static io.github.udayhe.quicksilver.enums.Command.*;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 

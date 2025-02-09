@@ -1,4 +1,4 @@
-package io.github.udayhe.quicksilver.db.enums;
+package io.github.udayhe.quicksilver.enums;
 
 public enum DBType {
     IN_MEMORY,

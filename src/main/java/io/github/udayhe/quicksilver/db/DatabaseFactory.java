@@ -1,7 +1,7 @@
 package io.github.udayhe.quicksilver.db;
 
 import io.github.udayhe.quicksilver.config.Config;
-import io.github.udayhe.quicksilver.db.enums.DBType;
+import io.github.udayhe.quicksilver.enums.DBType;
 import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
 import org.slf4j.Logger;

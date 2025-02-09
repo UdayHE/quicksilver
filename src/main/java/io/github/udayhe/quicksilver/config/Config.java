@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
-import static io.github.udayhe.quicksilver.db.enums.DBType.IN_MEMORY;
+import static io.github.udayhe.quicksilver.enums.DBType.IN_MEMORY;
 
 public class Config {
 

@@ -5,6 +5,8 @@ import io.github.udayhe.quicksilver.db.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.github.udayhe.quicksilver.constant.Constants.NULL;
+
 public class Get<K, V> implements Command<K, V> {
 
     private static final Logger log = LoggerFactory.getLogger(Get.class);
@@ -18,7 +20,7 @@ public class Get<K, V> implements Command<K, V> {
     public String execute(K key, V unused) {
         V value = db.get(key);
         log.info("📤 GET command: {} -> {}", key, value);
-        return value != null ? value.toString() : "NULL";
+        return value != null ? value.toString() : NULL;
     }
 }
 

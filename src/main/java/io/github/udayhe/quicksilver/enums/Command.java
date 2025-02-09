@@ -1,4 +1,4 @@
-package io.github.udayhe.quicksilver.command.enums;
+package io.github.udayhe.quicksilver.enums;
 
 public enum Command {
     SET,
