@@ -17,4 +17,6 @@ public interface DB<K, V> {
     void loadFromDisk(String filename);
 
     Map<K,V> getAll();
+
+    void restoreData(String response);
 }

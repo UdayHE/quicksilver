@@ -1,9 +1,6 @@
 package io.github.udayhe.quicksilver.client;
 
-import io.github.udayhe.quicksilver.cluster.ClusterClient;
-import io.github.udayhe.quicksilver.cluster.ClusterManager;
-import io.github.udayhe.quicksilver.cluster.ClusterNode;
-import io.github.udayhe.quicksilver.cluster.ConsistentHashing;
+import io.github.udayhe.quicksilver.cluster.*;
 import io.github.udayhe.quicksilver.command.CommandRegistry;
 import io.github.udayhe.quicksilver.db.DB;
 import org.slf4j.Logger;
@@ -20,31 +17,31 @@ import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 
 public class ClientHandler<K, V> implements Runnable {
-    private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
 
+    private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
     private final Socket socket;
     private final DB<K, V> db;
-    private final ConsistentHashing consistentHashing;
     private final BufferedReader in;
     private final PrintWriter out;
-    private final ClusterManager clusterManager;
+    private final ClusterService clusterService;
 
-    public ClientHandler(Socket socket, DB<K, V> db, ConsistentHashing consistentHashing, ClusterManager clusterManager) throws IOException {
+    public ClientHandler(Socket socket,
+                         DB<K, V> db,
+                         ClusterService clusterService) throws IOException {
         this.socket = socket;
         this.db = db;
-        this.consistentHashing = consistentHashing;
+        this.clusterService = clusterService;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
-        this.clusterManager = clusterManager;
     }
 
     @Override
     public void run() {
         log.info("📡 New client connected: {}", socket.getRemoteSocketAddress());
-        CommandRegistry<K, V> commandRegistry = new CommandRegistry<>(db, clusterManager, socket);
+        CommandRegistry<K, V> commandRegistry = new CommandRegistry<>(db, clusterService.getClusterManager(), socket);
 
         try {
-            out.println(LOGO);
+            this.out.println(LOGO);
             String line;
             while ((line = readCommand()) != null) {
                 log.debug("📩 Received command: {}", line);
@@ -60,7 +57,7 @@ public class ClientHandler<K, V> implements Runnable {
                 if (invalidCommand(cmd, key)) continue;
 
                 // Determine responsible node
-                ClusterNode targetNode = consistentHashing.getNodeForKey(parts[1]);
+                ClusterNode targetNode = this.clusterService.getConsistentHashing().getNodeForKey(parts[1]);
 
                 if (redirectToOtherNode(targetNode, line)) continue;
 
@@ -78,14 +75,14 @@ public class ClientHandler<K, V> implements Runnable {
      * Reads a command from the client
      */
     public String readCommand() throws IOException {
-        return in.readLine();
+        return this.in.readLine();
     }
 
     /**
      * Sends a response back to the client
      */
     public void sendResponse(String response) {
-        out.println(response);
+        this.out.println(response);
     }
 
     private boolean invalidCommand(String cmd, K key) {
@@ -114,14 +111,14 @@ public class ClientHandler<K, V> implements Runnable {
         if (command.equalsIgnoreCase(EXIT.name())) {
             log.info("🔌 Client disconnected: {}", socket.getRemoteSocketAddress());
             sendResponse(BYE);
-            socket.close();
+            this.socket.close();
             return true;
         }
         return false;
     }
 
     private boolean redirectToOtherNode(ClusterNode targetNode, String line) {
-        if (!isLocalNode(targetNode, socket.getLocalPort())) {
+        if (!isLocalNode(targetNode, this.socket.getLocalPort())) {
             log.info("🔄 Redirecting request [{}] to node {}", line, targetNode);
             String response = ClusterClient.sendRequest(targetNode, line);
             if (!response.equals("ERROR")) {

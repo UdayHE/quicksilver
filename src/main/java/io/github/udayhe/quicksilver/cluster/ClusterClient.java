@@ -18,7 +18,7 @@ public class ClusterClient {
     private ClusterClient() {}
 
     public static String sendRequest(ClusterNode node, String command) {
-        try (Socket socket = new Socket(node.getHost(), node.getPort());
+        try (Socket socket = new Socket(node.host(), node.port());
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 

@@ -7,6 +7,7 @@ public class Constants {
     public static final String OK = "OK";
     public static final String BYE = "BYE";
     public static final String SPACE = " ";
+    public static final String COLON = ":";
     public static final String NEW_LINE = "\n";
     public static final String BACKUP_DB = "backup.db";
     public static final String SHARDED_BACKUP = "sharded_backup";

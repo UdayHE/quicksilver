@@ -13,7 +13,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
-public class InMemoryDB<K, V> implements DB<K,V>, Serializable {
+import static io.github.udayhe.quicksilver.constant.Constants.NEW_LINE;
+import static io.github.udayhe.quicksilver.constant.Constants.SPACE;
+
+public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(InMemoryDB.class);
 
@@ -22,7 +25,8 @@ public class InMemoryDB<K, V> implements DB<K,V>, Serializable {
     private final ConcurrentHashMap<K, Long> expirationMap = new ConcurrentHashMap<>();
 
     private transient ScheduledExecutorService expirationService = ThreadPoolManager.getInstance().getScheduler();
-    private transient BiConsumer<K, V> evictionListener = (key, _) -> {};
+    private transient BiConsumer<K, V> evictionListener = (key, _) -> {
+    };
 
     public InMemoryDB(int maxSize) {
         this.maxSize = maxSize;
@@ -127,6 +131,17 @@ public class InMemoryDB<K, V> implements DB<K,V>, Serializable {
         return this.store;
     }
 
+    @Override
+    public void restoreData(String dataDump) {
+        String[] entries = dataDump.split(NEW_LINE);
+        for (String entry : entries) {
+            String[] kv = entry.split(SPACE);
+            if (kv.length == 2) {
+                set((K) kv[0], (V) kv[1], 0);
+            }
+        }
+    }
+
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject(); // Serialize default fields (store, expirationMap, maxSize)
@@ -140,7 +155,8 @@ public class InMemoryDB<K, V> implements DB<K,V>, Serializable {
 
         // Reinitialize non-serializable fields
         expirationService = ThreadPoolManager.getInstance().getScheduler();
-        evictionListener = (key, _) -> {}; // Reset eviction listener
+        evictionListener = (key, _) -> {
+        }; // Reset eviction listener
         startExpirationTask(); // Restart background expiration task
     }
 

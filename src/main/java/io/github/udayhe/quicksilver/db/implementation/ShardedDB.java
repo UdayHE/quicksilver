@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.ToIntFunction;
 
+import static io.github.udayhe.quicksilver.constant.Constants.NEW_LINE;
+import static io.github.udayhe.quicksilver.constant.Constants.SPACE;
+
 public class ShardedDB<K, V> implements DB<K, V>, Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(ShardedDB.class);
@@ -88,9 +91,20 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
     @Override
     public Map<K, V> getAll() {
         Map<K, V> all = new HashMap<>();
-        for(InMemoryDB<K, V> inMemoryDB: this.shards)
+        for (InMemoryDB<K, V> inMemoryDB : this.shards)
             all.putAll(inMemoryDB.getAll());
         return all;
+    }
+
+    @Override
+    public void restoreData(String dataDump) {
+        String[] entries = dataDump.split(NEW_LINE);
+        for (String entry : entries) {
+            String[] kv = entry.split(SPACE);
+            if (kv.length == 2) {
+                set((K) kv[0], (V) kv[1], 0);
+            }
+        }
     }
 
     @Serial

@@ -9,6 +9,6 @@ public class ClusterUtil {
     private ClusterUtil() {}
 
     public static boolean isLocalNode(ClusterNode node, int port) {
-        return node.getHost().equals(LOCALHOST) && node.getPort() == port;
+        return node.host().equals(LOCALHOST) && node.port() == port;
     }
 }
