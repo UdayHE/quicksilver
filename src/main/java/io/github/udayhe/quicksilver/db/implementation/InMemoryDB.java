@@ -1,7 +1,7 @@
 package io.github.udayhe.quicksilver.db.implementation;
 
 import io.github.udayhe.quicksilver.db.DB;
-import io.github.udayhe.quicksilver.threadpool.ThreadPoolManager;
+import io.github.udayhe.quicksilver.threads.ThreadPoolManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

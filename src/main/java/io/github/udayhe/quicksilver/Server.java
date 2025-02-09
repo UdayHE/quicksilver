@@ -8,7 +8,7 @@ import io.github.udayhe.quicksilver.db.DatabaseFactory;
 import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
 import io.github.udayhe.quicksilver.enums.DBType;
-import io.github.udayhe.quicksilver.threadpool.ThreadPoolManager;
+import io.github.udayhe.quicksilver.threads.ThreadPoolManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

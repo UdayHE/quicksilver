@@ -1,4 +1,4 @@
-package io.github.udayhe.quicksilver.threadpool;
+package io.github.udayhe.quicksilver.threads;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
