@@ -14,7 +14,7 @@ Designed for speed, scalability, and flexibility, it supports multiple database 
 
 ## 📂 Project Structure
 ```shell
-📦 Quicksilver
+📦 quicksilver
 ├── 📂 src
 │   ├── 📂 main
 │   │   ├── 📂 io.github.udayhe.quicksilver
