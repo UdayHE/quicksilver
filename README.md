@@ -18,32 +18,37 @@ Designed for speed, scalability, and flexibility, it supports multiple database 
 │   ├── 📂 main
 │   │   ├── 📂 io.github.udayhe.quicksilver
 │   │   │   ├── 📂 client
-│   │   │   │   ├── ClientHandler.java      # Handles client connections
+│   │   │   │   ├── ClientHandler.java       # Handles client connections
 │   │   │   ├── 📂 command
 │   │   │   │   ├── 📂 enums
-│   │   │   │   │   ├── Command.java        # Enum for supported commands
+│   │   │   │   │   ├── Command.java         # Enum for supported commands
 │   │   │   │   ├── 📂 implementation
-│   │   │   │   │   ├── Command.java        # Command interface
-│   │   │   │   │   ├── CommandRegistry.java # Manages command execution
+│   │   │   │   │   ├── Del.java             # DELETE command
+│   │   │   │   │   ├── Exit.java            # EXIT command
+│   │   │   │   │   ├── Flush.java           # FLUSH command
+│   │   │   │   │   ├── Get.java             # GET command
+│   │   │   │   │   ├── Set.java             # SET command
+│   │   │   │   ├── Command.java             # Command interface
+│   │   │   │   ├── CommandRegistry.java     # Manages command execution
 │   │   │   ├── 📂 config
-│   │   │   │   ├── Config.java             # Reads and manages configuration
+│   │   │   │   ├── Config.java              # Reads and manages configuration
 │   │   │   ├── 📂 constant
-│   │   │   │   ├── Constants.java          # Application-wide constants
+│   │   │   │   ├── Constants.java           # Application-wide constants
 │   │   │   ├── 📂 db
 │   │   │   │   ├── 📂 enums
-│   │   │   │   │   ├── DBType.java         # Enum for database types
+│   │   │   │   │   ├── DBType.java          # Enum for database types
 │   │   │   │   ├── 📂 implementation
-│   │   │   │   │   ├── InMemoryDB.java     # In-memory key-value store
-│   │   │   │   │   ├── ShardedDB.java      # Sharded database implementation
-│   │   │   │   │   ├── DatabaseFactory.java # Factory to create DB instances
-│   │   │   │   │   ├── DB.java             # Generic database interface
+│   │   │   │   │   ├── InMemoryDB.java      # In-memory key-value store
+│   │   │   │   │   ├── ShardedDB.java       # Sharded database implementation
+│   │   │   │   ├── DatabaseFactory.java     # Factory to create DB instances
+│   │   │   │   ├── DB.java                  # Generic database interface
 │   │   │   ├── 📂 threadpool
-│   │   │   │   ├── ThreadPoolManager.java  # Centralized thread pool manager
+│   │   │   │   ├── ThreadPoolManager.java   # Centralized thread pool manager
 │   │   │   ├── 📂 util
-│   │   │   │   ├── LogoUtil.java           # Prints QuickSilver logo
-│   │   │   ├── Server.java                 # Main server entry point
+│   │   │   │   ├── LogoUtil.java            # Prints QuickSilver logo
+│   │   │   ├── Server.java                  # Main server entry point
 │   │   ├── 📂 resources
-│   │   │   ├── config.properties           # Configurations (port, shards, etc.)
+│   │   │   ├── config.properties            # Configurations (port, shards, etc.)
 ├── 📂 test                                  # Unit tests
 ├── 📜 .gitignore                            # Git ignore rules
 ├── 📜 build.gradle                          # Gradle build file
@@ -52,6 +57,7 @@ Designed for speed, scalability, and flexibility, it supports multiple database 
 ├── 📜 LICENSE                               # License file
 ├── 📜 README.md                             # Project documentation
 ├── 📜 settings.gradle                       # Gradle settings
+
 ```
 
 ## 🚀 Getting Started
