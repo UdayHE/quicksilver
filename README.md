@@ -24,6 +24,7 @@ Designed for speed, scalability, and flexibility, it supports multiple database 
 │   │   │   │   ├── ClusterClient.java       # Sends commands to cluster nodes
 │   │   │   │   ├── ClusterManager.java      # Manages Cluster nodes
 │   │   │   │   ├── ClusterNode.java         # Cluster node
+│   │   │   │   ├── ClusterService.java      # Serves the cluster
 │   │   │   │   ├── ConsistentHashing.java   # ConsistentHashing
 │   │   │   ├── 📂 command
 │   │   │   │   ├── 📂 implementation
@@ -47,10 +48,11 @@ Designed for speed, scalability, and flexibility, it supports multiple database 
 │   │   │   ├── 📂 enums                     
 │   │   │   │   ├── Command.java             # Enum for commands  
 │   │   │   │   ├── DBType.java              # Enum for database types
-│   │   │   ├── 📂 threadpool
+│   │   │   ├── 📂 threads
 │   │   │   │   ├── ThreadPoolManager.java   # Centralized thread pool manager
 │   │   │   ├── 📂 util
 │   │   │   │   ├── ClusterUtil.java         # Cluster related utility methods
+│   │   │   │   ├── Util.java                # Utility class
 │   │   │   ├── Server.java                  # Main server entry point
 │   │   ├── 📂 resources
 │   │   │   ├── config.properties            # Configurations (port, shards, etc.)
