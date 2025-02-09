@@ -36,7 +36,7 @@ public class Constants {
     public static final int LRU_MAX_SIZE = 100;
 
 
-    public static final String LOGO = """
+    public static final String LOGO = NEW_LINE + """
                  ██████╗ ██╗   ██╗██╗ ██████╗██╗  ██╗     ███████╗██╗██╗    ██╗   ██╗███████╗██████╗\s
                 ██╔═══██╗██║   ██║██║██╔════╝██║ ██╔╝     ██╔════╝██║██║    ██║   ██║██╔════╝██╔══██╗
                 ██║   ██║██║   ██║██║██║     █████╔╝█████╗███████╗██║██║    ██║   ██║█████╗  ██████╔╝

@@ -44,7 +44,7 @@ public class Server<K, V> {
     }
 
     public void start() {
-       log.info(NEW_LINE + LOGO);
+       log.info(LOGO);
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             log.info("🚀 QuickSilverServer DB started on port {}", port);
             clusterService.registerInCluster(this.port);
