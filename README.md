@@ -20,9 +20,12 @@ Designed for speed, scalability, and flexibility, it supports multiple database 
 │   │   ├── 📂 io.github.udayhe.quicksilver
 │   │   │   ├── 📂 client
 │   │   │   │   ├── ClientHandler.java       # Handles client connections
+│   │   │   ├── 📂 cluster
+│   │   │   │   ├── ClusterClient.java       # Sends commands to cluster nodes
+│   │   │   │   ├── ClusterManager.java      # Manages Cluster nodes
+│   │   │   │   ├── ClusterNode.java         # Cluster node
+│   │   │   │   ├── ConsistentHashing.java   # ConsistentHashing
 │   │   │   ├── 📂 command
-│   │   │   │   ├── 📂 enums
-│   │   │   │   │   ├── Command.java         # Enum for supported commands
 │   │   │   │   ├── 📂 implementation
 │   │   │   │   │   ├── Del.java             # DELETE command
 │   │   │   │   │   ├── Exit.java            # EXIT command
@@ -36,17 +39,18 @@ Designed for speed, scalability, and flexibility, it supports multiple database 
 │   │   │   ├── 📂 constant
 │   │   │   │   ├── Constants.java           # Application-wide constants
 │   │   │   ├── 📂 db
-│   │   │   │   ├── 📂 enums
-│   │   │   │   │   ├── DBType.java          # Enum for database types
 │   │   │   │   ├── 📂 implementation
 │   │   │   │   │   ├── InMemoryDB.java      # In-memory key-value store
 │   │   │   │   │   ├── ShardedDB.java       # Sharded database implementation
 │   │   │   │   ├── DatabaseFactory.java     # Factory to create DB instances
 │   │   │   │   ├── DB.java                  # Generic database interface
+│   │   │   ├── 📂 enums                     
+│   │   │   │   ├── Command.java             # Enum for commands  
+│   │   │   │   ├── DBType.java              # Enum for database types
 │   │   │   ├── 📂 threadpool
 │   │   │   │   ├── ThreadPoolManager.java   # Centralized thread pool manager
 │   │   │   ├── 📂 util
-│   │   │   │   ├── LogoUtil.java            # Prints QuickSilver logo
+│   │   │   │   ├── ClusterUtil.java         # Cluster related utility methods
 │   │   │   ├── Server.java                  # Main server entry point
 │   │   ├── 📂 resources
 │   │   │   ├── config.properties            # Configurations (port, shards, etc.)
@@ -98,7 +102,7 @@ shard.size=100
 
 | Command | Description | Examle |
 | ----- | ------ | ------ |
-|`SET key value` | Stores a value |SET username Uday
+|`SET key value` | Stores a value |SET username uday
 |`GET key` | Retrieves a value|GET username
 |`DEL key` | Deletes a key |DEL username
 |`FLUSH` | Clears all data |FLUSH
