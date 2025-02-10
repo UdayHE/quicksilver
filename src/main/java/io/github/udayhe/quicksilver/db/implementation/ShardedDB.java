@@ -1,8 +1,7 @@
 package io.github.udayhe.quicksilver.db.implementation;
 
 import io.github.udayhe.quicksilver.db.DB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.udayhe.quicksilver.logging.LogManager;
 
 import java.io.*;
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import static io.github.udayhe.quicksilver.constant.Constants.*;
 
 public class ShardedDB<K, V> implements DB<K, V>, Serializable {
 
-    private static final Logger log = LoggerFactory.getLogger(ShardedDB.class);
+    private static final LogManager log = LogManager.getInstance();
     private final List<InMemoryDB<K, V>> shards;
     private transient ToIntFunction<K> hashFunction;
 
@@ -28,14 +27,14 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
         this.shards = new CopyOnWriteArrayList<>();
         for (int i = 0; i < numShards; i++)
             shards.add(new InMemoryDB<>(maxSizePerShard));
-        log.info("🔄 ShardedDB initialized with {} shards", numShards);
+        log.info("🔄 ShardedDB initialized with " + numShards + " shards");
     }
 
     @Override
     public void set(K key, V value, long ttlMillis) {
         int shardIndex = getShardIndex(key);
         shards.get(shardIndex).set(key, value, ttlMillis);
-        log.debug("✅ Key {} stored in shard {}", key, shardIndex);
+        log.debug("✅ Key " + key + " stored in shard " + shardIndex);
     }
 
     @Override
@@ -44,10 +43,10 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
         Map<K, V> shard = shards.get(shardIndex).getAll();
 
         if (shard.containsKey(key)) {
-            log.info("📤 GET command: Found key {} in shard {}", key, shardIndex);
+            log.info("📤 GET command: Found key " + key + " in shard {}" + shardIndex);
             return shard.get(key);
         } else {
-            log.warn("⚠️ GET command: Key {} not found in shard {}", key, shardIndex);
+            log.warning("⚠️ GET command: Key " + key + " not found in shard {}" + shardIndex);
             return null;
         }
     }
@@ -57,7 +56,7 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
     public void delete(K key) {
         int shardIndex = getShardIndex(key);
         shards.get(shardIndex).delete(key);
-        log.debug("🗑️ Key {} removed from shard {}", key, shardIndex);
+        log.debug("🗑️ Key " + key + " removed from shard " + shardIndex);
     }
 
     @Override

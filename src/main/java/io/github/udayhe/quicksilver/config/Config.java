@@ -1,7 +1,6 @@
 package io.github.udayhe.quicksilver.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.udayhe.quicksilver.logging.LogManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +11,7 @@ import static io.github.udayhe.quicksilver.enums.DBType.IN_MEMORY;
 
 public class Config {
 
-    private static final Logger log = LoggerFactory.getLogger(Config.class);
+    private static final LogManager log = LogManager.getInstance();
     private static final Config INSTANCE = new Config();
     private final Properties properties = new Properties();
 
@@ -27,12 +26,12 @@ public class Config {
     private void loadProperties() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
             if (input == null) {
-                log.warn("⚠️ config.properties not found. Using default values.");
+                log.warning("⚠️ config.properties not found. Using default values.");
                 return;
             }
             properties.load(input);
         } catch (IOException e) {
-            log.error("❌ Error reading config.properties. Using default values.", e);
+            log.error("❌ Error reading config.properties. Using default values."+ e);
         }
     }
 

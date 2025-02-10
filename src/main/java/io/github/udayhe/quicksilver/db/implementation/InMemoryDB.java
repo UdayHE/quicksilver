@@ -1,9 +1,8 @@
 package io.github.udayhe.quicksilver.db.implementation;
 
 import io.github.udayhe.quicksilver.db.DB;
+import io.github.udayhe.quicksilver.logging.LogManager;
 import io.github.udayhe.quicksilver.threads.ThreadPoolManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.LinkedHashMap;
@@ -18,7 +17,7 @@ import static io.github.udayhe.quicksilver.constant.Constants.SPACE;
 
 public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
 
-    private static final Logger log = LoggerFactory.getLogger(InMemoryDB.class);
+    private static final LogManager log = LogManager.getInstance();
 
     private final int maxSize;
     private final Map<K, V> store;
@@ -82,9 +81,9 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
     public void saveToDisk(String filename) {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
             out.writeObject(store);
-            log.info("💾 Database saved to {}", filename);
+            log.info("💾 Database saved to "+ filename);
         } catch (IOException e) {
-            log.error("❌ Error saving database", e);
+            log.error("❌ Error saving database."+ e);
         }
     }
 
@@ -94,9 +93,9 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
             Map<K, V> loadedStore = (Map<K, V>) in.readObject();
             store.putAll(loadedStore);
-            log.info("🔄 Database loaded from {}", filename);
+            log.info("🔄 Database loaded from "+ filename);
         } catch (IOException | ClassNotFoundException e) {
-            log.error("❌ Error loading database", e);
+            log.error("❌ Error loading database."+ e);
         }
     }
 

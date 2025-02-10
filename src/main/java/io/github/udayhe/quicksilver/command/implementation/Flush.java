@@ -6,16 +6,15 @@ import io.github.udayhe.quicksilver.cluster.ClusterNode;
 import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
-import org.slf4j.Logger;
+import io.github.udayhe.quicksilver.logging.LogManager;
 
-import static io.github.udayhe.quicksilver.enums.Command.FLUSH;
 import static io.github.udayhe.quicksilver.constant.Constants.OK;
+import static io.github.udayhe.quicksilver.enums.Command.FLUSH;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
-import static org.slf4j.LoggerFactory.getLogger;
 
 public class Flush<K, V> implements Command<K, V> {
 
-    private static final Logger log = getLogger(Flush.class);
+    private static final LogManager log = LogManager.getInstance();
     private final DB<K, V> db;
     private final ClusterManager clusterManager;
 

@@ -1,10 +1,11 @@
 package io.github.udayhe.quicksilver.client;
 
-import io.github.udayhe.quicksilver.cluster.*;
+import io.github.udayhe.quicksilver.cluster.ClusterClient;
+import io.github.udayhe.quicksilver.cluster.ClusterNode;
+import io.github.udayhe.quicksilver.cluster.ClusterService;
 import io.github.udayhe.quicksilver.command.CommandRegistry;
 import io.github.udayhe.quicksilver.db.DB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.udayhe.quicksilver.logging.LogManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,13 +13,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import static io.github.udayhe.quicksilver.enums.Command.*;
 import static io.github.udayhe.quicksilver.constant.Constants.*;
+import static io.github.udayhe.quicksilver.enums.Command.*;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 
 public class ClientHandler<K, V> implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
+    private static final LogManager log = LogManager.getInstance();
     private final Socket socket;
     private final DB<K, V> db;
     private final BufferedReader in;
@@ -37,13 +38,13 @@ public class ClientHandler<K, V> implements Runnable {
 
     @Override
     public void run() {
-        log.info("📡 New client connected: {}", socket.getRemoteSocketAddress());
+        log.info("📡 New client connected: " + socket.getRemoteSocketAddress());
         CommandRegistry<K, V> commandRegistry = new CommandRegistry<>(db, clusterService.getClusterManager(), socket);
         try {
             this.out.println(LOGO);
             String line;
             while ((line = readCommand()) != null) {
-                log.debug("📩 Received command: {}", line);
+                log.debug("📩 Received command: " + line);
                 String[] parts = line.trim().split(SPACE);
                 if (parts.length == 0 || parts[0].isEmpty()) continue;
 
@@ -62,7 +63,7 @@ public class ClientHandler<K, V> implements Runnable {
                 sendResponse(response);
             }
         } catch (IOException e) {
-            log.error("❌ Client communication error", e);
+            log.error("❌ Client communication error:" + e);
         }
     }
 
@@ -106,7 +107,7 @@ public class ClientHandler<K, V> implements Runnable {
 
     private boolean exit(String command) throws IOException {
         if (command.equalsIgnoreCase(EXIT.name())) {
-            log.info("🔌 Client disconnected: {}", socket.getRemoteSocketAddress());
+            log.info("🔌 Client disconnected: " + socket.getRemoteSocketAddress());
             sendResponse(BYE);
             this.socket.close();
             return true;
@@ -116,12 +117,12 @@ public class ClientHandler<K, V> implements Runnable {
 
     private boolean redirectToOtherNode(ClusterNode targetNode, String line) {
         if (!isLocalNode(targetNode, this.socket.getLocalPort())) {
-            log.info("🔄 Redirecting request [{}] to node {}", line, targetNode);
+            log.info("🔄 Redirecting request [" + line + "] to node " + targetNode);
             String response = ClusterClient.sendRequest(targetNode, line);
             if (!response.equals(ERROR)) {
                 sendResponse(response);
             } else {
-                log.error("❌ Failed to process command [{}] on node {}", line, targetNode);
+                log.error("❌ Failed to process command [" + line + "] on node " + targetNode);
                 sendResponse("ERROR: Failed to process request");
             }
             return true;

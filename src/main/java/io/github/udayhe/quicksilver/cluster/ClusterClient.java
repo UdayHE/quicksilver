@@ -1,7 +1,6 @@
 package io.github.udayhe.quicksilver.cluster;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.udayhe.quicksilver.logging.LogManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,16 +13,17 @@ import static io.github.udayhe.quicksilver.constant.Constants.NEW_LINE;
 
 public class ClusterClient {
 
-    private static final Logger log = LoggerFactory.getLogger(ClusterClient.class);
+    private static final LogManager log = LogManager.getInstance();
 
-    private ClusterClient() {}
+    private ClusterClient() {
+    }
 
     public static String sendRequest(ClusterNode node, String command) {
         try (Socket socket = new Socket(node.host(), node.port());
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            log.info("📡 Sending request [{}] to {}", command, node);
+            log.info("📡 Sending request [" + command + "] to " + node);
             out.println(command);
 
             StringBuilder response = new StringBuilder();
@@ -33,7 +33,7 @@ public class ClusterClient {
 
             return response.toString().trim();
         } catch (IOException e) {
-            log.error("❌ Failed to communicate with node: {}", node, e);
+            log.error("❌ Failed to communicate with node: " + node + " exception:" + e);
         }
         return ERROR;
     }

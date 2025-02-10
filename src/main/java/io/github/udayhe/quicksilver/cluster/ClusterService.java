@@ -2,8 +2,7 @@ package io.github.udayhe.quicksilver.cluster;
 
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.udayhe.quicksilver.logging.LogManager;
 
 import static io.github.udayhe.quicksilver.constant.Constants.LOCALHOST;
 import static io.github.udayhe.quicksilver.enums.Command.DUMP;
@@ -11,7 +10,7 @@ import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 
 public class ClusterService {
 
-    private static final Logger log = LoggerFactory.getLogger(ClusterService.class);
+    private static final LogManager log = LogManager.getInstance();
     private final ClusterManager clusterManager = new ClusterManager();
     private final ConsistentHashing consistentHashing = new ConsistentHashing();
 
@@ -24,7 +23,7 @@ public class ClusterService {
     public void syncDataFromCluster(DB db) {
         for (ClusterNode node : clusterManager.getNodes()) {
             if (!isLocalNode(node, Config.getInstance().getPort())) {
-                log.info("🔄 Syncing data from {}", node);
+                log.info("🔄 Syncing data from "+ node);
                 String response = ClusterClient.sendRequest(node, DUMP.name());
                 db.restoreData(response);
             }

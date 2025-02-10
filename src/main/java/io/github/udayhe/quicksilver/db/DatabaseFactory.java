@@ -4,14 +4,13 @@ import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.enums.DBType;
 import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.github.udayhe.quicksilver.logging.LogManager;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 
 public class DatabaseFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(DatabaseFactory.class);
+    private static final LogManager log = LogManager.getInstance();
 
     private DatabaseFactory() {
     }
@@ -27,7 +26,7 @@ public class DatabaseFactory {
             case IN_MEMORY -> {
                 InMemoryDB<K, V> db = new InMemoryDB<>(LRU_MAX_SIZE);
                 db.loadFromDisk(BACKUP_DB);
-                db.setEvictionListener((key, value) -> log.info("🔥 Key Evicted: {} -> {}", key, value));
+                db.setEvictionListener((key, value) -> log.info("🔥 Key Evicted: " + key + " -> " + value));
                 return db;
             }
             case SHARDED -> {

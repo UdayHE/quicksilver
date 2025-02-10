@@ -8,9 +8,8 @@ import io.github.udayhe.quicksilver.db.DatabaseFactory;
 import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
 import io.github.udayhe.quicksilver.enums.DBType;
+import io.github.udayhe.quicksilver.logging.LogManager;
 import io.github.udayhe.quicksilver.threads.ThreadPoolManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,7 +21,7 @@ import static io.github.udayhe.quicksilver.util.Util.getPort;
 
 public class Server<K, V> {
 
-    private static final Logger log = LoggerFactory.getLogger(Server.class);
+    private static final LogManager log = LogManager.getInstance();
     private final DB<K, V> db;
     private final int port;
     private final ExecutorService clientThreadPool;
@@ -46,16 +45,16 @@ public class Server<K, V> {
     public void start() {
        log.info(LOGO);
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            log.info("🚀 QuickSilverServer DB started on port {}", port);
+            log.info("🚀 QuickSilverServer DB started on port "+ port);
             clusterService.registerInCluster(this.port);
             clusterService.syncDataFromCluster(this.db);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                log.info("📡 New client connected: {}", clientSocket.getRemoteSocketAddress());
+                log.info("📡 New client connected: "+ clientSocket.getRemoteSocketAddress());
                 clientThreadPool.execute(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
-            log.error("❌ Error starting QuickSilverServer on port {}", port, e);
+            log.error("❌ Error starting QuickSilverServer on port "+ port +" exception:"+ e);
         }
     }
 
@@ -64,7 +63,7 @@ public class Server<K, V> {
             ClientHandler<K, V> clientHandler = new ClientHandler<>(socket, db, clusterService);
             clientThreadPool.execute(clientHandler);
         } catch (IOException e) {
-            log.error("❌ Failed to start ClientHandler for client {}", socket.getRemoteSocketAddress(), e);
+            log.error("❌ Failed to start ClientHandler for client " + socket.getRemoteSocketAddress() + " exception:" + e);
         }
     }
 

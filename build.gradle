@@ -19,12 +19,6 @@ dependencies {
     // JUnit for testing
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-
-    // Logging dependencies
-    implementation 'org.slf4j:slf4j-api:2.0.9'
-    implementation('ch.qos.logback:logback-classic:1.4.12') {
-        exclude group: 'org.slf4j', module: 'slf4j-api'
-    }
 }
 
 jar {
