@@ -1,17 +1,16 @@
 package io.github.udayhe.quicksilver.config;
 
-import io.github.udayhe.quicksilver.logging.LogManager;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.enums.DBType.IN_MEMORY;
 
 public class Config {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(Config.class.getName());
     private static final Config INSTANCE = new Config();
     private final Properties properties = new Properties();
 
@@ -31,7 +30,7 @@ public class Config {
             }
             properties.load(input);
         } catch (IOException e) {
-            log.error("❌ Error reading config.properties. Using default values."+ e);
+            log.severe("❌ Error reading config.properties. Using default values."+ e);
         }
     }
 

@@ -6,7 +6,8 @@ import io.github.udayhe.quicksilver.cluster.ClusterNode;
 import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
-import io.github.udayhe.quicksilver.logging.LogManager;
+
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.OK;
 import static io.github.udayhe.quicksilver.enums.Command.FLUSH;
@@ -14,7 +15,7 @@ import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 
 public class Flush<K, V> implements Command<K, V> {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(Flush.class.getName());
     private final DB<K, V> db;
     private final ClusterManager clusterManager;
 

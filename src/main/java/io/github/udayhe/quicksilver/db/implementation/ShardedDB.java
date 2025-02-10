@@ -1,7 +1,6 @@
 package io.github.udayhe.quicksilver.db.implementation;
 
 import io.github.udayhe.quicksilver.db.DB;
-import io.github.udayhe.quicksilver.logging.LogManager;
 
 import java.io.*;
 import java.util.HashMap;
@@ -9,12 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.ToIntFunction;
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 
 public class ShardedDB<K, V> implements DB<K, V>, Serializable {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(ShardedDB.class.getName());
     private final List<InMemoryDB<K, V>> shards;
     private transient ToIntFunction<K> hashFunction;
 
@@ -34,7 +34,7 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
     public void set(K key, V value, long ttlMillis) {
         int shardIndex = getShardIndex(key);
         shards.get(shardIndex).set(key, value, ttlMillis);
-        log.debug("✅ Key " + key + " stored in shard " + shardIndex);
+        log.info("✅ Key " + key + " stored in shard " + shardIndex);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
     public void delete(K key) {
         int shardIndex = getShardIndex(key);
         shards.get(shardIndex).delete(key);
-        log.debug("🗑️ Key " + key + " removed from shard " + shardIndex);
+        log.info("🗑️ Key " + key + " removed from shard " + shardIndex);
     }
 
     @Override

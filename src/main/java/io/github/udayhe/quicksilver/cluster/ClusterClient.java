@@ -1,19 +1,18 @@
 package io.github.udayhe.quicksilver.cluster;
 
-import io.github.udayhe.quicksilver.logging.LogManager;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.ERROR;
 import static io.github.udayhe.quicksilver.constant.Constants.NEW_LINE;
 
 public class ClusterClient {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(ClusterClient.class.getName());
 
     private ClusterClient() {
     }
@@ -33,7 +32,7 @@ public class ClusterClient {
 
             return response.toString().trim();
         } catch (IOException e) {
-            log.error("❌ Failed to communicate with node: " + node + " exception:" + e);
+            log.severe("❌ Failed to communicate with node: " + node + " exception:" + e);
         }
         return ERROR;
     }

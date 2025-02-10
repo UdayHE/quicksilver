@@ -2,13 +2,14 @@ package io.github.udayhe.quicksilver.command.implementation;
 
 import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.db.DB;
-import io.github.udayhe.quicksilver.logging.LogManager;
+
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.NULL;
 
 public class Get<K, V> implements Command<K, V> {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(Get.class.getName());
     private final DB<K, V> db;
 
     public Get(DB<K, V> db) {

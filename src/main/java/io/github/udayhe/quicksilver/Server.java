@@ -8,20 +8,20 @@ import io.github.udayhe.quicksilver.db.DatabaseFactory;
 import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
 import io.github.udayhe.quicksilver.enums.DBType;
-import io.github.udayhe.quicksilver.logging.LogManager;
 import io.github.udayhe.quicksilver.threads.ThreadPoolManager;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.util.Util.getPort;
 
 public class Server<K, V> {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(Server.class.getName());
     private final DB<K, V> db;
     private final int port;
     private final ExecutorService clientThreadPool;
@@ -54,7 +54,7 @@ public class Server<K, V> {
                 clientThreadPool.execute(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
-            log.error("❌ Error starting QuickSilverServer on port "+ port +" exception:"+ e);
+            log.severe("❌ Error starting QuickSilverServer on port "+ port +" exception:"+ e);
         }
     }
 
@@ -63,7 +63,7 @@ public class Server<K, V> {
             ClientHandler<K, V> clientHandler = new ClientHandler<>(socket, db, clusterService);
             clientThreadPool.execute(clientHandler);
         } catch (IOException e) {
-            log.error("❌ Failed to start ClientHandler for client " + socket.getRemoteSocketAddress() + " exception:" + e);
+            log.severe("❌ Failed to start ClientHandler for client " + socket.getRemoteSocketAddress() + " exception:" + e);
         }
     }
 

@@ -1,13 +1,12 @@
 package io.github.udayhe.quicksilver.cluster;
 
-import io.github.udayhe.quicksilver.logging.LogManager;
-
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 public class ConsistentHashing {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(ConsistentHashing.class.getName());
     private final SortedMap<Integer, ClusterNode> ring = new TreeMap<>();
 
     public void addNode(ClusterNode node) {

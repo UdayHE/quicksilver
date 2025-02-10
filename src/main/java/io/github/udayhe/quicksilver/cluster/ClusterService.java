@@ -2,7 +2,8 @@ package io.github.udayhe.quicksilver.cluster;
 
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
-import io.github.udayhe.quicksilver.logging.LogManager;
+
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.LOCALHOST;
 import static io.github.udayhe.quicksilver.enums.Command.DUMP;
@@ -10,7 +11,7 @@ import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 
 public class ClusterService {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(ClusterService.class.getName());
     private final ClusterManager clusterManager = new ClusterManager();
     private final ConsistentHashing consistentHashing = new ConsistentHashing();
 

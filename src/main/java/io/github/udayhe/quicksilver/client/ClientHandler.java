@@ -5,13 +5,13 @@ import io.github.udayhe.quicksilver.cluster.ClusterNode;
 import io.github.udayhe.quicksilver.cluster.ClusterService;
 import io.github.udayhe.quicksilver.command.CommandRegistry;
 import io.github.udayhe.quicksilver.db.DB;
-import io.github.udayhe.quicksilver.logging.LogManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 import static io.github.udayhe.quicksilver.enums.Command.*;
@@ -19,7 +19,7 @@ import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 
 public class ClientHandler<K, V> implements Runnable {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(ClientHandler.class.getName());
     private final Socket socket;
     private final DB<K, V> db;
     private final BufferedReader in;
@@ -44,7 +44,7 @@ public class ClientHandler<K, V> implements Runnable {
             this.out.println(LOGO);
             String line;
             while ((line = readCommand()) != null) {
-                log.debug("📩 Received command: " + line);
+                log.info("📩 Received command: " + line);
                 String[] parts = line.trim().split(SPACE);
                 if (parts.length == 0 || parts[0].isEmpty()) continue;
 
@@ -63,7 +63,7 @@ public class ClientHandler<K, V> implements Runnable {
                 sendResponse(response);
             }
         } catch (IOException e) {
-            log.error("❌ Client communication error:" + e);
+            log.severe("❌ Client communication error:" + e);
         }
     }
 
@@ -122,7 +122,7 @@ public class ClientHandler<K, V> implements Runnable {
             if (!response.equals(ERROR)) {
                 sendResponse(response);
             } else {
-                log.error("❌ Failed to process command [" + line + "] on node " + targetNode);
+                log.severe("❌ Failed to process command [" + line + "] on node " + targetNode);
                 sendResponse("ERROR: Failed to process request");
             }
             return true;

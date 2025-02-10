@@ -2,9 +2,9 @@ package io.github.udayhe.quicksilver.command.implementation;
 
 import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.db.DB;
-import io.github.udayhe.quicksilver.logging.LogManager;
 
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static io.github.udayhe.quicksilver.constant.Constants.NEW_LINE;
@@ -12,7 +12,7 @@ import static io.github.udayhe.quicksilver.constant.Constants.SPACE;
 
 public class Dump<K, V> implements Command<K, V> {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(Dump.class.getName());
     private final DB<K, V> db;
 
     public Dump(DB<K, V> db) {

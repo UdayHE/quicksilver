@@ -1,16 +1,17 @@
 package io.github.udayhe.quicksilver.db;
 
 import io.github.udayhe.quicksilver.config.Config;
-import io.github.udayhe.quicksilver.enums.DBType;
 import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
-import io.github.udayhe.quicksilver.logging.LogManager;
+import io.github.udayhe.quicksilver.enums.DBType;
+
+import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
 
 public class DatabaseFactory {
 
-    private static final LogManager log = LogManager.getInstance();
+    private static final Logger log = Logger.getLogger(DatabaseFactory.class.getName());
 
     private DatabaseFactory() {
     }
