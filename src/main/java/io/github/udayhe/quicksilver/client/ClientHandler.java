@@ -119,7 +119,7 @@ public class ClientHandler<K, V> implements Runnable {
         if (!isLocalNode(targetNode, this.socket.getLocalPort())) {
             log.info("🔄 Redirecting request [{}] to node {}", line, targetNode);
             String response = ClusterClient.sendRequest(targetNode, line);
-            if (!response.equals("ERROR")) {
+            if (!response.equals(ERROR)) {
                 sendResponse(response);
             } else {
                 log.error("❌ Failed to process command [{}] on node {}", line, targetNode);
