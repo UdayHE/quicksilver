@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import static io.github.udayhe.quicksilver.constant.Constants.ERROR;
+import static io.github.udayhe.quicksilver.constant.Constants.NEW_LINE;
 
 public class ClusterClient {
 
@@ -28,7 +29,7 @@ public class ClusterClient {
             StringBuilder response = new StringBuilder();
             String line;
             while ((line = in.readLine()) != null)
-                response.append(line).append("\n");
+                response.append(line).append(NEW_LINE);
 
             return response.toString().trim();
         } catch (IOException e) {

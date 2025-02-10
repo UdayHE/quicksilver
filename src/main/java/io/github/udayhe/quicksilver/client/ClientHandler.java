@@ -39,7 +39,6 @@ public class ClientHandler<K, V> implements Runnable {
     public void run() {
         log.info("📡 New client connected: {}", socket.getRemoteSocketAddress());
         CommandRegistry<K, V> commandRegistry = new CommandRegistry<>(db, clusterService.getClusterManager(), socket);
-
         try {
             this.out.println(LOGO);
             String line;
@@ -53,9 +52,7 @@ public class ClientHandler<K, V> implements Runnable {
                 V value = (parts.length > 2) ? (V) parts[2] : null;
 
                 if (exit(cmd)) return;
-                if (commandWithoutKeyValue(cmd, FLUSH.name(),commandRegistry)) continue;
-                if (commandWithoutKeyValue(cmd, DUMP.name(), commandRegistry)) continue;
-                if (invalidCommand(cmd, key)) continue;
+                if (shouldContinue(cmd, commandRegistry, key)) continue;
 
                 ClusterNode targetNode = this.clusterService.getConsistentHashing().getNodeForKey(parts[1]);
                 if (redirectToOtherNode(targetNode, line)) continue;
@@ -96,7 +93,9 @@ public class ClientHandler<K, V> implements Runnable {
         return false;
     }
 
-    private boolean commandWithoutKeyValue(String command, String commandValue, CommandRegistry<K, V> commandRegistry) {
+    private boolean commandWithoutKeyValue(String command,
+                                           String commandValue,
+                                           CommandRegistry<K, V> commandRegistry) {
         if (command.equalsIgnoreCase(commandValue)) {
             String response = commandRegistry.executeCommand(command, null, null);
             sendResponse(response);
@@ -128,5 +127,11 @@ public class ClientHandler<K, V> implements Runnable {
             return true;
         }
         return false;
+    }
+
+    private boolean shouldContinue(String cmd, CommandRegistry<K, V> commandRegistry, K key) {
+        if (commandWithoutKeyValue(cmd, FLUSH.name(), commandRegistry)) return true;
+        if (commandWithoutKeyValue(cmd, DUMP.name(), commandRegistry)) return true;
+        return invalidCommand(cmd, key);
     }
 }
