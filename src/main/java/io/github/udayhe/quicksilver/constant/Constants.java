@@ -14,6 +14,8 @@ public class Constants {
     public static final String LOCALHOST = "localhost";
     public static final String ERROR = "ERROR";
     public static final String NULL = "NULL";
+    public static final String SHARD = "_shard";
+    public static final String DB = ".db";
 
 
     //Environment-Variables

@@ -11,8 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.ToIntFunction;
 
-import static io.github.udayhe.quicksilver.constant.Constants.NEW_LINE;
-import static io.github.udayhe.quicksilver.constant.Constants.SPACE;
+import static io.github.udayhe.quicksilver.constant.Constants.*;
 
 public class ShardedDB<K, V> implements DB<K, V>, Serializable {
 
@@ -69,17 +68,15 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
 
     @Override
     public void saveToDisk(String baseFilename) {
-        for (int i = 0; i < shards.size(); i++) {
-            shards.get(i).saveToDisk(baseFilename + "_shard" + i + ".db");
-        }
+        for (int i = 0; i < shards.size(); i++)
+            shards.get(i).saveToDisk(baseFilename + SHARD + i + DB);
         log.info("💾 All shards saved to disk");
     }
 
     @Override
     public void loadFromDisk(String baseFilename) {
-        for (int i = 0; i < shards.size(); i++) {
-            shards.get(i).loadFromDisk(baseFilename + "_shard" + i + ".db");
-        }
+        for (int i = 0; i < shards.size(); i++)
+            shards.get(i).loadFromDisk(baseFilename + SHARD + i + DB);
         log.info("🔄 All shards loaded from disk");
     }
 
@@ -104,17 +101,15 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
 
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject(); // Serialize non-transient fields
+        out.defaultWriteObject();
         log.info("💾 Serializing ShardedDB...");
     }
 
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject(); // Deserialize non-transient fields
+        in.defaultReadObject();
         log.info("🔄 Deserializing ShardedDB...");
-
-        // Reinitialize transient fields
-        hashFunction = Object::hashCode; // Default hash function
+        hashFunction = Object::hashCode;
     }
 
     private int getShardIndex(K key) {
