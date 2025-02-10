@@ -13,7 +13,8 @@ public class DatabaseFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DatabaseFactory.class);
 
-    private DatabaseFactory() {}
+    private DatabaseFactory() {
+    }
 
     /**
      * Creates the appropriate DB instance based on DBType
@@ -21,10 +22,10 @@ public class DatabaseFactory {
      * @param dbType The database type
      * @return The database instance
      */
-    public static DB<String, String> createDatabase(DBType dbType) {
+    public static <K, V> DB<K, V> createDatabase(DBType dbType) {
         switch (dbType) {
             case IN_MEMORY -> {
-                InMemoryDB<String, String> db = new InMemoryDB<>(LRU_MAX_SIZE);
+                InMemoryDB<K, V> db = new InMemoryDB<>(LRU_MAX_SIZE);
                 db.loadFromDisk(BACKUP_DB);
                 db.setEvictionListener((key, value) -> log.info("🔥 Key Evicted: {} -> {}", key, value));
                 return db;
@@ -34,7 +35,7 @@ public class DatabaseFactory {
                 int numShards = config.getTotalShards();
                 int shardSize = config.getShardSize();
 
-                ShardedDB<String, String> shardedDB = new ShardedDB<>(numShards, shardSize);
+                ShardedDB<K, V> shardedDB = new ShardedDB<>(numShards, shardSize);
                 shardedDB.loadFromDisk(SHARDED_BACKUP);
                 return shardedDB;
             }

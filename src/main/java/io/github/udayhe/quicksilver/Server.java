@@ -39,7 +39,7 @@ public class Server<K, V> {
     public static void main(String[] args) {
         int port = getPort(args);
         DBType dbType = DBType.valueOf(Config.getInstance().getDBType().toUpperCase());
-        DB<String, String> db = DatabaseFactory.createDatabase(dbType);
+        DB<String, Object> db = DatabaseFactory.createDatabase(dbType);
         new Server<>(port, db).start();
     }
 

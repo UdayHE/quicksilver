@@ -27,9 +27,8 @@ public class ClusterClient {
 
             StringBuilder response = new StringBuilder();
             String line;
-            while ((line = in.readLine()) != null) {
+            while ((line = in.readLine()) != null)
                 response.append(line).append("\n");
-            }
 
             return response.toString().trim();
         } catch (IOException e) {

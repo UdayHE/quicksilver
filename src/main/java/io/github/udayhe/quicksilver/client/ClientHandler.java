@@ -53,12 +53,11 @@ public class ClientHandler<K, V> implements Runnable {
                 V value = (parts.length > 2) ? (V) parts[2] : null;
 
                 if (exit(cmd)) return;
-                if (flush(cmd, commandRegistry)) continue;
+                if (commandWithoutKeyValue(cmd, FLUSH.name(),commandRegistry)) continue;
+                if (commandWithoutKeyValue(cmd, DUMP.name(), commandRegistry)) continue;
                 if (invalidCommand(cmd, key)) continue;
 
-                // Determine responsible node
                 ClusterNode targetNode = this.clusterService.getConsistentHashing().getNodeForKey(parts[1]);
-
                 if (redirectToOtherNode(targetNode, line)) continue;
 
                 // Process command locally
@@ -97,9 +96,8 @@ public class ClientHandler<K, V> implements Runnable {
         return false;
     }
 
-
-    private boolean flush(String command, CommandRegistry<K, V> commandRegistry) {
-        if (command.equalsIgnoreCase(FLUSH.name())) {
+    private boolean commandWithoutKeyValue(String command, String commandValue, CommandRegistry<K, V> commandRegistry) {
+        if (command.equalsIgnoreCase(commandValue)) {
             String response = commandRegistry.executeCommand(command, null, null);
             sendResponse(response);
             return true;

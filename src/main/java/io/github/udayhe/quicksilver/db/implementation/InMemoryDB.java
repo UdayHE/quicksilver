@@ -25,8 +25,7 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
     private final ConcurrentHashMap<K, Long> expirationMap = new ConcurrentHashMap<>();
 
     private transient ScheduledExecutorService expirationService = ThreadPoolManager.getInstance().getScheduler();
-    private transient BiConsumer<K, V> evictionListener = (key, _) -> {
-    };
+    private transient BiConsumer<K, V> evictionListener = (key, _) -> {};
 
     public InMemoryDB(int maxSize) {
         this.maxSize = maxSize;
@@ -78,31 +77,6 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
         expirationMap.clear();
     }
 
-    // ✅ Check if key is expired
-    private boolean isExpired(K key) {
-        Long expiry = expirationMap.get(key);
-        return expiry != null && System.currentTimeMillis() > expiry;
-    }
-
-    // ✅ Remove key and trigger eviction listener
-    private void removeKey(K key) {
-        V value = store.remove(key);
-        expirationMap.remove(key);
-        evictionListener.accept(key, value);
-    }
-
-    // ✅ Start background task to check for expired keys
-    private void startExpirationTask() {
-        expirationService.scheduleAtFixedRate(() -> {
-            long now = System.currentTimeMillis();
-            expirationMap.forEach((key, expiry) -> {
-                if (expiry < now) {
-                    removeKey(key);
-                }
-            });
-        }, 1, 1, TimeUnit.SECONDS);
-    }
-
     // ✅ Save data to disk (Persistence)
     @Override
     public void saveToDisk(String filename) {
@@ -140,6 +114,28 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
                 set((K) kv[0], (V) kv[1], 0);
             }
         }
+    }
+
+    private boolean isExpired(K key) {
+        Long expiry = expirationMap.get(key);
+        return expiry != null && System.currentTimeMillis() > expiry;
+    }
+
+    private void removeKey(K key) {
+        V value = store.remove(key);
+        expirationMap.remove(key);
+        evictionListener.accept(key, value);
+    }
+
+    private void startExpirationTask() {
+        expirationService.scheduleAtFixedRate(() -> {
+            long now = System.currentTimeMillis();
+            expirationMap.forEach((key, expiry) -> {
+                if (expiry < now) {
+                    removeKey(key);
+                }
+            });
+        }, 1, 1, TimeUnit.SECONDS);
     }
 
     @Serial

@@ -27,14 +27,9 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
     public ShardedDB(int numShards, int maxSizePerShard, ToIntFunction<K> hashFunction) {
         this.hashFunction = hashFunction;
         this.shards = new CopyOnWriteArrayList<>();
-        for (int i = 0; i < numShards; i++) {
+        for (int i = 0; i < numShards; i++)
             shards.add(new InMemoryDB<>(maxSizePerShard));
-        }
         log.info("🔄 ShardedDB initialized with {} shards", numShards);
-    }
-
-    private int getShardIndex(K key) {
-        return Math.abs(hashFunction.applyAsInt(key)) % shards.size();
     }
 
     @Override
@@ -120,6 +115,10 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
 
         // Reinitialize transient fields
         hashFunction = Object::hashCode; // Default hash function
+    }
+
+    private int getShardIndex(K key) {
+        return Math.abs(this.hashFunction.applyAsInt(key)) % this.shards.size();
     }
 
 }
