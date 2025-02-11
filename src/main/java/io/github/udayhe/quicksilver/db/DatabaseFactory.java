@@ -26,7 +26,7 @@ public class DatabaseFactory {
     public static <K, V> DB<K, V> createDatabase(DBType dbType) {
         switch (dbType) {
             case IN_MEMORY -> {
-                InMemoryDB<K, V> db = new InMemoryDB<>(LRU_MAX_SIZE);
+                InMemoryDB<K, V> db = new InMemoryDB<>(Config.getInstance().getLRUMaxSize());
                 db.loadFromDisk(BACKUP_DB);
                 db.setEvictionListener((key, value) -> log.log(Level.INFO, "🔥 Key Evicted: {0} -> {1}", new Object[]{key, value}));
                 return db;

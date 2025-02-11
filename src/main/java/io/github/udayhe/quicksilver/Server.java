@@ -8,6 +8,7 @@ import io.github.udayhe.quicksilver.db.DatabaseFactory;
 import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
 import io.github.udayhe.quicksilver.enums.DBType;
+import io.github.udayhe.quicksilver.pubsub.PubSubManager;
 import io.github.udayhe.quicksilver.threads.ThreadPoolManager;
 
 import java.io.IOException;
@@ -27,10 +28,12 @@ public class Server<K, V> {
     private final int port;
     private final ExecutorService clientThreadPool;
     private final ClusterService clusterService;
+    private final PubSubManager pubSubManager;
 
-    public Server(int port, DB<K, V> db) {
+    public Server(int port, DB<K, V> db, PubSubManager pubSubManager) {
         this.port = port;
         this.db = db;
+        this.pubSubManager = pubSubManager;
         this.clusterService = new ClusterService();
         this.clientThreadPool = ThreadPoolManager.getInstance().getScheduler();
         addShutdownHook();
@@ -40,7 +43,7 @@ public class Server<K, V> {
         int port = getPort(args);
         DBType dbType = DBType.valueOf(Config.getInstance().getDBType().toUpperCase());
         DB<String, Object> db = DatabaseFactory.createDatabase(dbType);
-        new Server<>(port, db).start();
+        new Server<>(port, db, new PubSubManager()).start();
     }
 
     public void start() {
@@ -61,7 +64,7 @@ public class Server<K, V> {
 
     private void handleClient(Socket socket) {
         try {
-            ClientHandler<K, V> clientHandler = new ClientHandler<>(socket, db, clusterService);
+            ClientHandler<K, V> clientHandler = new ClientHandler<>(socket, db, clusterService, pubSubManager);
             clientThreadPool.execute(clientHandler);
         } catch (IOException e) {
             log.severe("❌ Failed to start ClientHandler for client " + socket.getRemoteSocketAddress() + " exception:" + e);

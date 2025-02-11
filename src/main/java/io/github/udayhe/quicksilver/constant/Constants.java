@@ -28,14 +28,16 @@ public class Constants {
     public static final String CONFIG_DB_TYPE = "db.type";
     public static final String CONFIG_DB_TOTAL_SHARD = "db.shard.total";
     public static final String CONFIG_DB_SHARD_SIZE = "db.shard.size";
+    public static final String CONFIG_THREAD_POOL_SIZE = "thread.pool.size";
+    public static final String CONFIG_LRU_MAX_SIZE = "lru.max.size";
 
 
     //Other
-    public static final int CORE_POOL_SIZE = 1;
+    public static final int DEFAULT_THREAD_POOL_SIZE = 1;
     public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_SHARD_SIZE = 50;
     public static final int DEFAULT_TOTAL_SHARD = 4;
-    public static final int LRU_MAX_SIZE = 100;
+    public static final int DEFAULT_LRU_MAX_SIZE = 100;
 
 
     public static final String LOGO = NEW_LINE + """

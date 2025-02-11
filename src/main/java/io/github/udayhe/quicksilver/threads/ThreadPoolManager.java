@@ -1,9 +1,10 @@
 package io.github.udayhe.quicksilver.threads;
 
+import io.github.udayhe.quicksilver.config.Config;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static io.github.udayhe.quicksilver.constant.Constants.CORE_POOL_SIZE;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class ThreadPoolManager {
@@ -12,7 +13,7 @@ public class ThreadPoolManager {
     private final ScheduledExecutorService scheduler;
 
     private ThreadPoolManager() {
-        this.scheduler = Executors.newScheduledThreadPool(CORE_POOL_SIZE);
+        this.scheduler = Executors.newScheduledThreadPool(Config.getInstance().getThreadPoolSize());
     }
 
     public static ThreadPoolManager getInstance() {

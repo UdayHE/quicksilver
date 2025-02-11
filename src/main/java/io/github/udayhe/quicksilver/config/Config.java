@@ -15,7 +15,7 @@ public class Config {
     private static final Config INSTANCE = new Config();
     private final Properties properties = new Properties();
 
-    private Config() { // ✅ Private constructor to prevent external instantiation
+    private Config() {
         loadProperties();
     }
 
@@ -49,6 +49,14 @@ public class Config {
 
     public int getShardSize() {
         return Integer.parseInt(properties.getProperty(CONFIG_DB_SHARD_SIZE, String.valueOf(DEFAULT_SHARD_SIZE)));
+    }
+
+    public int getThreadPoolSize() {
+        return Integer.parseInt(properties.getProperty(CONFIG_THREAD_POOL_SIZE, String.valueOf(DEFAULT_THREAD_POOL_SIZE)));
+    }
+
+    public int getLRUMaxSize() {
+        return Integer.parseInt(properties.getProperty(CONFIG_LRU_MAX_SIZE, String.valueOf(DEFAULT_LRU_MAX_SIZE)));
     }
 }
 

@@ -6,5 +6,8 @@ public enum Command {
     GET,
     FLUSH,
     DUMP,
-    EXIT
+    EXIT,
+    SUBSCRIBE,
+    UNSUBSCRIBE,
+    PUBLISH
 }
