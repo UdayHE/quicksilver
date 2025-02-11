@@ -4,6 +4,7 @@ import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.db.DB;
 
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ public class Dump<K, V> implements Command<K, V> {
 
     @Override
     public String execute(K unusedKey, V unusedValue) {
-        log.info("📤 Dumping database data");
+        log.log(Level.INFO, "📤 Dumping database data");
 
         // Serialize all data into a string format
         Map<K, V> data = db.getAll();

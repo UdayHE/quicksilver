@@ -3,6 +3,7 @@ package io.github.udayhe.quicksilver.config;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
@@ -25,12 +26,12 @@ public class Config {
     private void loadProperties() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
             if (input == null) {
-                log.warning("⚠️ config.properties not found. Using default values.");
+                log.log(Level.WARNING, "⚠️ config.properties not found. Using default values.");
                 return;
             }
             properties.load(input);
         } catch (IOException e) {
-            log.severe("❌ Error reading config.properties. Using default values."+ e);
+            log.log(Level.SEVERE, "❌ Error reading config.properties. Using default values.", e);
         }
     }
 

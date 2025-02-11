@@ -3,6 +3,7 @@ package io.github.udayhe.quicksilver.command.implementation;
 import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.db.DB;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.OK;
@@ -20,7 +21,7 @@ public class Set<K, V> implements Command<K, V> {
     @Override
     public String execute(K key, V value) {
         db.set(key, value, 0);
-        log.info("✅ SET command executed: " + key + " -> " + value);
+        log.log(Level.INFO, "✅ SET command executed: {0} -> {1}", new Object[]{key, value});
         return OK;
     }
 }

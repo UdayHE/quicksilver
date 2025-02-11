@@ -2,6 +2,7 @@ package io.github.udayhe.quicksilver.cluster;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -13,13 +14,13 @@ public class ClusterManager {
     public void addNode(ClusterNode node) {
         if (!nodes.contains(node)) {
             nodes.add(node);
-            log.info("🖥️ Node added: " + node);
+            log.log(Level.INFO, "🖥️ Node added: {0}", node);
         }
     }
 
     public void removeNode(ClusterNode node) {
         nodes.remove(node);
-        log.info("❌ Node removed: " + node);
+        log.log(Level.INFO, "❌ Node removed: {0}", node);
     }
 
     public List<ClusterNode> getNodes() {

@@ -3,6 +3,7 @@ package io.github.udayhe.quicksilver.cluster;
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.LOCALHOST;
@@ -24,7 +25,7 @@ public class ClusterService {
     public void syncDataFromCluster(DB db) {
         for (ClusterNode node : clusterManager.getNodes()) {
             if (!isLocalNode(node, Config.getInstance().getPort())) {
-                log.info("🔄 Syncing data from "+ node);
+                log.log(Level.INFO, "🔄 Syncing data from {0}", node);
                 String response = ClusterClient.sendRequest(node, DUMP.name());
                 db.restoreData(response);
             }

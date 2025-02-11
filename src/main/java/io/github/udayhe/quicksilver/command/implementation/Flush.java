@@ -7,6 +7,7 @@ import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.OK;
@@ -26,13 +27,13 @@ public class Flush<K, V> implements Command<K, V> {
 
     @Override
     public String execute(K unusedKey, V unusedValue) {
-        log.info("🔥 Flushing database on this node");
+        log.log(Level.INFO, "🔥 Flushing database on this node");
         db.clear();
         for (ClusterNode node : clusterManager.getNodes()) {
             if (!isLocalNode(node, Config.getInstance().getPort()))
                 ClusterClient.sendRequest(node, FLUSH.name());
         }
-        log.info("🔥 Flushing Completed.");
+        log.log(Level.INFO, "🔥 Flushing Completed.");
         return OK;
     }
 }

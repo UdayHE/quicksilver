@@ -5,6 +5,7 @@ import io.github.udayhe.quicksilver.db.implementation.InMemoryDB;
 import io.github.udayhe.quicksilver.db.implementation.ShardedDB;
 import io.github.udayhe.quicksilver.enums.DBType;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
@@ -27,7 +28,7 @@ public class DatabaseFactory {
             case IN_MEMORY -> {
                 InMemoryDB<K, V> db = new InMemoryDB<>(LRU_MAX_SIZE);
                 db.loadFromDisk(BACKUP_DB);
-                db.setEvictionListener((key, value) -> log.info("🔥 Key Evicted: " + key + " -> " + value));
+                db.setEvictionListener((key, value) -> log.log(Level.INFO, "🔥 Key Evicted: {0} -> {1}", new Object[]{key, value}));
                 return db;
             }
             case SHARDED -> {

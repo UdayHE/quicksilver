@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
@@ -38,13 +39,13 @@ public class ClientHandler<K, V> implements Runnable {
 
     @Override
     public void run() {
-        log.info("📡 New client connected: " + socket.getRemoteSocketAddress());
+        log.log(Level.INFO, "📡 New client connected: {0}", socket.getRemoteSocketAddress());
         CommandRegistry<K, V> commandRegistry = new CommandRegistry<>(db, clusterService.getClusterManager(), socket);
         try {
             this.out.println(LOGO);
             String line;
             while ((line = readCommand()) != null) {
-                log.info("📩 Received command: " + line);
+                log.log(Level.INFO, "📩 Received command: {0}", line);
                 String[] parts = line.trim().split(SPACE);
                 if (parts.length == 0 || parts[0].isEmpty()) continue;
 
@@ -63,7 +64,7 @@ public class ClientHandler<K, V> implements Runnable {
                 sendResponse(response);
             }
         } catch (IOException e) {
-            log.severe("❌ Client communication error:" + e);
+            log.log(Level.SEVERE, "❌ Client communication error:", e);
         }
     }
 
@@ -107,7 +108,7 @@ public class ClientHandler<K, V> implements Runnable {
 
     private boolean exit(String command) throws IOException {
         if (command.equalsIgnoreCase(EXIT.name())) {
-            log.info("🔌 Client disconnected: " + socket.getRemoteSocketAddress());
+            log.log(Level.INFO, "🔌 Client disconnected: {0}", socket.getRemoteSocketAddress());
             sendResponse(BYE);
             this.socket.close();
             return true;
@@ -117,12 +118,12 @@ public class ClientHandler<K, V> implements Runnable {
 
     private boolean redirectToOtherNode(ClusterNode targetNode, String line) {
         if (!isLocalNode(targetNode, this.socket.getLocalPort())) {
-            log.info("🔄 Redirecting request [" + line + "] to node " + targetNode);
+            log.log(Level.INFO, "🔄 Redirecting request [{0}] to node {1}", new Object[]{line, targetNode});
             String response = ClusterClient.sendRequest(targetNode, line);
             if (!response.equals(ERROR)) {
                 sendResponse(response);
             } else {
-                log.severe("❌ Failed to process command [" + line + "] on node " + targetNode);
+                log.log(Level.SEVERE, "❌ Failed to process command [{0}] on node {1}", new Object[]{line, targetNode});
                 sendResponse("ERROR: Failed to process request");
             }
             return true;

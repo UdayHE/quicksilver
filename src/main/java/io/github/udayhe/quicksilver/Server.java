@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
@@ -43,18 +44,18 @@ public class Server<K, V> {
     }
 
     public void start() {
-       log.info(LOGO);
+        log.info(LOGO);
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            log.info("🚀 QuickSilverServer DB started on port "+ port);
+            log.log(Level.INFO, "🚀 QuickSilverServer DB started on port {0}", port);
             clusterService.registerInCluster(this.port);
             clusterService.syncDataFromCluster(this.db);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                log.info("📡 New client connected: "+ clientSocket.getRemoteSocketAddress());
+                log.log(Level.INFO, "📡 New client connected: {0}", clientSocket.getRemoteSocketAddress());
                 clientThreadPool.execute(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
-            log.severe("❌ Error starting QuickSilverServer on port "+ port +" exception:"+ e);
+            log.log(Level.SEVERE, "❌ Error starting QuickSilverServer on port {0} exception:{1}", new Object[]{port, e});
         }
     }
 
@@ -64,6 +65,7 @@ public class Server<K, V> {
             clientThreadPool.execute(clientHandler);
         } catch (IOException e) {
             log.severe("❌ Failed to start ClientHandler for client " + socket.getRemoteSocketAddress() + " exception:" + e);
+            log.log(Level.SEVERE, "❌ Failed to start ClientHandler for client {0} exception:{1}", new Object[]{socket.getRemoteSocketAddress(), e});
         }
     }
 

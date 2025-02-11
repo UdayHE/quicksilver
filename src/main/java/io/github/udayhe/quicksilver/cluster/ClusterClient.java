@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.ERROR;
@@ -21,8 +22,7 @@ public class ClusterClient {
         try (Socket socket = new Socket(node.host(), node.port());
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
-            log.info("📡 Sending request [" + command + "] to " + node);
+            log.log(Level.INFO, "📡 Sending request [{0}] to {1}", new Object[]{command, node});
             out.println(command);
 
             StringBuilder response = new StringBuilder();
@@ -32,7 +32,7 @@ public class ClusterClient {
 
             return response.toString().trim();
         } catch (IOException e) {
-            log.severe("❌ Failed to communicate with node: " + node + " exception:" + e);
+            log.log(Level.SEVERE, "❌ Failed to communicate with node: {0} exception: {1}", new Object[]{node, e});
         }
         return ERROR;
     }

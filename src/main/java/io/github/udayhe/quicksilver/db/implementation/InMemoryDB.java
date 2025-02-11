@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.NEW_LINE;
@@ -81,9 +82,9 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
     public void saveToDisk(String filename) {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
             out.writeObject(store);
-            log.info("💾 Database saved to "+ filename);
+            log.log(Level.INFO, "💾 Database saved to {0}", filename);
         } catch (IOException e) {
-            log.severe("❌ Error saving database."+ e);
+            log.log(Level.SEVERE, "❌ Error saving database.", e);
         }
     }
 
@@ -93,7 +94,7 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
             Map<K, V> loadedStore = (Map<K, V>) in.readObject();
             store.putAll(loadedStore);
-            log.info("🔄 Database loaded from "+ filename);
+            log.log(Level.INFO, "🔄 Database loaded from {0}", filename);
         } catch (IOException | ClassNotFoundException e) {
             log.severe("❌ Error loading database."+ e);
         }
@@ -140,13 +141,13 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject(); // Serialize default fields (store, expirationMap, maxSize)
-        log.info("💾 Serializing InMemoryDB...");
+        log.log(Level.INFO, "💾 Serializing InMemoryDB...");
     }
 
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject(); // Deserialize default fields
-        log.info("🔄 Deserializing InMemoryDB...");
+        log.log(Level.INFO, "🔄 Deserializing InMemoryDB...");
 
         // Reinitialize non-serializable fields
         expirationService = ThreadPoolManager.getInstance().getScheduler();

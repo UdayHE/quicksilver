@@ -2,6 +2,7 @@ package io.github.udayhe.quicksilver.cluster;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ConsistentHashing {
@@ -12,13 +13,13 @@ public class ConsistentHashing {
     public void addNode(ClusterNode node) {
         int hash = node.hashCode();
         ring.put(hash, node);
-        log.info("🖥️ Node added to hash ring: "+ node);
+        log.log(Level.INFO, "🖥️ Node added to hash ring: {0}", node);
     }
 
     public void removeNode(ClusterNode node) {
         int hash = node.hashCode();
         ring.remove(hash);
-        log.info("❌ Node removed from hash ring: "+ node);
+        log.log(Level.INFO, "❌ Node removed from hash ring: {0}", node);
     }
 
     public ClusterNode getNodeForKey(String key) {

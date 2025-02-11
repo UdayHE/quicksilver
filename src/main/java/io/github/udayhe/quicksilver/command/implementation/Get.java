@@ -3,6 +3,7 @@ package io.github.udayhe.quicksilver.command.implementation;
 import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.db.DB;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.NULL;
@@ -19,7 +20,7 @@ public class Get<K, V> implements Command<K, V> {
     @Override
     public String execute(K key, V unused) {
         V value = db.get(key);
-        log.info("📤 GET command: " + key + " -> " + value);
+        log.log(Level.INFO, "📤 GET command: {0} -> {1}", new Object[]{key, value});
         return value != null ? value.toString() : NULL;
     }
 }

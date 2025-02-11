@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.ToIntFunction;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.*;
@@ -27,14 +28,14 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
         this.shards = new CopyOnWriteArrayList<>();
         for (int i = 0; i < numShards; i++)
             shards.add(new InMemoryDB<>(maxSizePerShard));
-        log.info("🔄 ShardedDB initialized with " + numShards + " shards");
+        log.log(Level.INFO, "🔄 ShardedDB initialized with {0} shards", numShards);
     }
 
     @Override
     public void set(K key, V value, long ttlMillis) {
         int shardIndex = getShardIndex(key);
         shards.get(shardIndex).set(key, value, ttlMillis);
-        log.info("✅ Key " + key + " stored in shard " + shardIndex);
+        log.log(Level.INFO, "✅ Key {0} stored in shard {1}", new Object[]{key, shardIndex});
     }
 
     @Override
@@ -43,10 +44,10 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
         Map<K, V> shard = shards.get(shardIndex).getAll();
 
         if (shard.containsKey(key)) {
-            log.info("📤 GET command: Found key " + key + " in shard {}" + shardIndex);
+            log.log(Level.INFO, "📤 GET command: Found key {0} in shard {1}", new Object[]{key, shardIndex});
             return shard.get(key);
         } else {
-            log.warning("⚠️ GET command: Key " + key + " not found in shard {}" + shardIndex);
+            log.log(Level.WARNING, "⚠️ GET command: Key {0} not found in shard {1}", new Object[]{key, shardIndex});
             return null;
         }
     }
@@ -56,7 +57,7 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
     public void delete(K key) {
         int shardIndex = getShardIndex(key);
         shards.get(shardIndex).delete(key);
-        log.info("🗑️ Key " + key + " removed from shard " + shardIndex);
+        log.log(Level.INFO, "🗑️ Key {0} removed from shard {1}", new Object[]{key, shardIndex});
     }
 
     @Override
