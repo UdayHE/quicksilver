@@ -27,14 +27,14 @@ public class Server<K, V> {
     private final DB<K, V> db;
     private final int port;
     private final ExecutorService clientThreadPool;
-    private final ClusterService clusterService;
+    private final ClusterService<K> clusterService;
     private final PubSubManager pubSubManager;
 
     public Server(int port, DB<K, V> db, PubSubManager pubSubManager) {
         this.port = port;
         this.db = db;
         this.pubSubManager = pubSubManager;
-        this.clusterService = new ClusterService();
+        this.clusterService = new ClusterService<>();
         this.clientThreadPool = ThreadPoolManager.getInstance().getScheduler();
         addShutdownHook();
     }

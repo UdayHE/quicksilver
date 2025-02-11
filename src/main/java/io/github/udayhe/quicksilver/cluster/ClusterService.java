@@ -10,11 +10,11 @@ import static io.github.udayhe.quicksilver.constant.Constants.LOCALHOST;
 import static io.github.udayhe.quicksilver.enums.Command.DUMP;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 
-public class ClusterService {
+public class ClusterService<K> {
 
     private static final Logger log = Logger.getLogger(ClusterService.class.getName());
     private final ClusterManager clusterManager = new ClusterManager();
-    private final ConsistentHashing consistentHashing = new ConsistentHashing();
+    private final ConsistentHashing<K> consistentHashing = new ConsistentHashing<>();
 
     public void registerInCluster(int port) {
         ClusterNode self = new ClusterNode(LOCALHOST, port);
@@ -36,7 +36,12 @@ public class ClusterService {
         return clusterManager;
     }
 
-    public ConsistentHashing getConsistentHashing() {
+    public ConsistentHashing<K> getConsistentHashing() {
         return consistentHashing;
     }
+
+    public ClusterNode getResponsibleNode(K key) {
+        return consistentHashing.getNodeForKey(key);
+    }
+
 }

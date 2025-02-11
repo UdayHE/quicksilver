@@ -4,7 +4,6 @@ import io.github.udayhe.quicksilver.cluster.ClusterClient;
 import io.github.udayhe.quicksilver.cluster.ClusterNode;
 import io.github.udayhe.quicksilver.cluster.ClusterService;
 import io.github.udayhe.quicksilver.command.CommandRegistry;
-import io.github.udayhe.quicksilver.command.implementation.Publish;
 import io.github.udayhe.quicksilver.db.DB;
 import io.github.udayhe.quicksilver.pubsub.PubSubManager;
 
@@ -28,12 +27,14 @@ public class ClientHandler<K, V> implements Runnable {
     private final BufferedReader in;
     private final PrintWriter out;
     private final CommandRegistry<K, V> commandRegistry;
+    private final ClusterService<K> clusterService;
 
-    public ClientHandler(Socket socket, DB<K, V> db, ClusterService clusterService, PubSubManager pubSubManager) throws IOException {
+    public ClientHandler(Socket socket, DB<K, V> db, ClusterService<K> clusterService, PubSubManager pubSubManager) throws IOException {
         this.socket = socket;
         this.db = db;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.clusterService = clusterService;
         this.commandRegistry = new CommandRegistry<>(db, clusterService.getClusterManager(), pubSubManager, socket);
     }
 
@@ -52,7 +53,13 @@ public class ClientHandler<K, V> implements Runnable {
                 K key = (parts.length > 1) ? (K) parts[1] : null;
                 V value = (parts.length > 2) ? (V) parts[2] : null;
 
-                // ✅ Executes all commands, including Pub/Sub
+                if(exit(cmd)) return;
+                if(handleSpecialCommands(cmd)) continue;
+
+                ClusterNode targetNode = clusterService.getResponsibleNode(key);
+                if (redirectToOtherNode(targetNode, line))
+                    continue;
+
                 String response = commandRegistry.executeCommand(cmd, key, value);
                 sendResponse(response);
             }
@@ -61,13 +68,6 @@ public class ClientHandler<K, V> implements Runnable {
         }
     }
 
-
-    /**
-     * Reads a command from the client
-     */
-    public String readCommand() throws IOException {
-        return in.readLine();
-    }
 
     /**
      * Sends a response back to the client
