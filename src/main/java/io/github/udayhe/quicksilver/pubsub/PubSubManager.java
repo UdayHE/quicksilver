@@ -5,9 +5,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PubSubManager {
-    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(PubSubManager.class.getName());
+
+    private static final Logger log = java.util.logging.Logger.getLogger(PubSubManager.class.getName());
     private static final Set<PrintWriter> DEFAULT_SUBSCRIBERS = ConcurrentHashMap.newKeySet();
 
     private final Map<String, Set<PrintWriter>> subscribersByTopic = new ConcurrentHashMap<>();

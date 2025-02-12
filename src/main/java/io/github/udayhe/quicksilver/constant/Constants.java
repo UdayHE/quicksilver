@@ -30,6 +30,7 @@ public class Constants {
     public static final String CONFIG_DB_SHARD_SIZE = "db.shard.size";
     public static final String CONFIG_THREAD_POOL_SIZE = "thread.pool.size";
     public static final String CONFIG_LRU_MAX_SIZE = "lru.max.size";
+    public static final String THREAD_POOL_TERMINATION_TIMEOUT = "thread.pool.termination.timeout";
 
 
     //Other
@@ -38,6 +39,7 @@ public class Constants {
     public static final int DEFAULT_SHARD_SIZE = 50;
     public static final int DEFAULT_TOTAL_SHARD = 4;
     public static final int DEFAULT_LRU_MAX_SIZE = 100;
+    public static final int DEFAULT_TERMINATION_TIMEOUT = 5;
 
 
     public static final String LOGO = NEW_LINE + """

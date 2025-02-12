@@ -10,15 +10,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class ThreadPoolManager {
 
     private static final ThreadPoolManager INSTANCE = new ThreadPoolManager();
-    private static final int TERMINATION_TIMEOUT = 5; // Timeout for scheduler termination in seconds
-
     private final ScheduledExecutorService scheduledExecutorService;
 
     private ThreadPoolManager() {
         this.scheduledExecutorService = initializeScheduler();
     }
 
-    // Creates and initializes the scheduled executor service
     private ScheduledExecutorService initializeScheduler() {
         int threadPoolSize = Config.getInstance().getThreadPoolSize();
         return Executors.newScheduledThreadPool(threadPoolSize);
@@ -35,7 +32,7 @@ public class ThreadPoolManager {
     public void shutdown() {
         try {
             scheduledExecutorService.shutdown();
-            if (!scheduledExecutorService.awaitTermination(TERMINATION_TIMEOUT, SECONDS)) {
+            if (!scheduledExecutorService.awaitTermination(Config.getInstance().getThreadPoolTerminationTimeout(), SECONDS)) {
                 forceShutdown();
             }
         } catch (InterruptedException e) {
@@ -44,7 +41,6 @@ public class ThreadPoolManager {
         }
     }
 
-    // Helper method to forcibly shut down the scheduler
     private void forceShutdown() {
         scheduledExecutorService.shutdownNow();
     }

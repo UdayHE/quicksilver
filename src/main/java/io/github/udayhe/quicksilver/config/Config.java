@@ -20,7 +20,7 @@ public class Config {
 
     private final Properties properties = new Properties();
 
-    // Extracted constant log messages
+
     private static final String CONFIG_FILE_NOT_FOUND = "⚠️ config.properties not found. Using default values.";
     private static final String CONFIG_FILE_ERROR = "❌ Error reading config.properties. Using default values.";
 
@@ -28,12 +28,12 @@ public class Config {
         loadProperties();
     }
 
-    // Singleton instance accessor
+
     public static Config getInstance() {
         return INSTANCE;
     }
 
-    // Method to load configuration properties from the file
+
     private void loadProperties() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
             if (input == null) {
@@ -46,12 +46,10 @@ public class Config {
         }
     }
 
-    // Generic method to fetch integer property with default value
     private int getIntProperty(String key, int defaultValue) {
         return Integer.parseInt(properties.getProperty(key, String.valueOf(defaultValue)));
     }
 
-    // Getters for specific properties with more descriptive names
     public int getServerPort() {
         return getIntProperty(CONFIG_SERVER_PORT, DEFAULT_PORT);
     }
@@ -76,7 +74,11 @@ public class Config {
         return getIntProperty(CONFIG_LRU_MAX_SIZE, DEFAULT_LRU_MAX_SIZE);
     }
 
-    // Extracted logger utility methods for better log reuse
+    public int getThreadPoolTerminationTimeout() {
+        return getIntProperty(THREAD_POOL_TERMINATION_TIMEOUT, DEFAULT_TERMINATION_TIMEOUT);
+    }
+
+
     private void logWarning() {
         log.log(Level.WARNING, Config.CONFIG_FILE_NOT_FOUND);
     }
