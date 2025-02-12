@@ -1,7 +1,5 @@
 package io.github.udayhe.quicksilver.client;
 
-import io.github.udayhe.quicksilver.cluster.ClusterClient;
-import io.github.udayhe.quicksilver.cluster.ClusterNode;
 import io.github.udayhe.quicksilver.cluster.ClusterService;
 import io.github.udayhe.quicksilver.command.CommandRegistry;
 import io.github.udayhe.quicksilver.db.DB;
@@ -15,108 +13,100 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static io.github.udayhe.quicksilver.constant.Constants.*;
-import static io.github.udayhe.quicksilver.enums.Command.*;
-import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
+import static io.github.udayhe.quicksilver.constant.Constants.BYE;
+import static io.github.udayhe.quicksilver.constant.Constants.LOGO;
 
 public class ClientHandler<K, V> implements Runnable {
 
     private static final Logger log = Logger.getLogger(ClientHandler.class.getName());
+
     private final Socket socket;
     private final DB<K, V> db;
-    private final BufferedReader in;
-    private final PrintWriter out;
+    private final BufferedReader inputReader;
+    private final PrintWriter outputWriter;
     private final CommandRegistry<K, V> commandRegistry;
-    private final ClusterService<K> clusterService;
 
     public ClientHandler(Socket socket, DB<K, V> db, ClusterService<K> clusterService, PubSubManager pubSubManager) throws IOException {
         this.socket = socket;
         this.db = db;
-        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true);
-        this.clusterService = clusterService;
+        this.inputReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.outputWriter = new PrintWriter(socket.getOutputStream(), true);
         this.commandRegistry = new CommandRegistry<>(db, clusterService.getClusterManager(), pubSubManager, socket);
     }
 
     @Override
     public void run() {
-        log.log(Level.INFO,"📡 New client connected: {0}", socket.getRemoteSocketAddress());
+        log.log(Level.INFO, "📡 New client connected: {0}", socket.getRemoteSocketAddress());
+        outputWriter.println(LOGO);
+
         try {
-            String line;
-            out.println(LOGO);
-            while ((line = in.readLine()) != null) {
-                log.log(Level.WARNING,"📩 Received command: {0}", line);
-                String[] parts = line.trim().split(SPACE);
-                if (parts.length == 0) continue;
-
-                String cmd = parts[0].toUpperCase();
-                K key = (parts.length > 1) ? (K) parts[1] : null;
-                V value = (parts.length > 2) ? (V) parts[2] : null;
-
-                if(exit(cmd)) return;
-                if(handleSpecialCommands(cmd)) continue;
-
-                ClusterNode targetNode = clusterService.getResponsibleNode(key);
-                if (redirectToOtherNode(targetNode, line))
-                    continue;
-
-                String response = commandRegistry.executeCommand(cmd, key, value);
-                sendResponse(response);
+            String commandLine;
+            while (!socket.isClosed() && (commandLine = inputReader.readLine()) != null) {
+                try {
+                    String response = handleCommand(commandLine.trim());
+                    if (response != null) {
+                        outputWriter.println(response);
+                    }
+                } catch (Exception e) {
+                    log.log(Level.SEVERE, "Error processing command: {0}", commandLine);
+                    outputWriter.println("ERROR: Could not process command.");
+                }
             }
         } catch (IOException e) {
-            log.log(Level.SEVERE, "❌ Client communication error", e);
-        }
-    }
-
-
-    /**
-     * Sends a response back to the client
-     */
-    public void sendResponse(String response) {
-        out.println(response);
-    }
-
-    /**
-     * 🛠️ Handles commands that do not require key-value pairs (like FLUSH & DUMP)
-     */
-    private boolean handleSpecialCommands(String command) {
-        if (command.equalsIgnoreCase(FLUSH.name()) || command.equalsIgnoreCase(DUMP.name())) {
-            String response = commandRegistry.executeCommand(command, null, null);
-            sendResponse(response);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 🔌 Handles the EXIT command
-     */
-    private boolean exit(String command) throws IOException {
-        if (command.equalsIgnoreCase(EXIT.name())) {
-            log.log(Level.INFO, "🔌 Client disconnected: {0}", socket.getRemoteSocketAddress());
-            sendResponse(BYE);
-            socket.close();
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 🔄 Redirects request to the correct cluster node (if necessary)
-     */
-    private boolean redirectToOtherNode(ClusterNode targetNode, String line) {
-        if (!isLocalNode(targetNode, socket.getLocalPort())) {
-            log.log(Level.INFO, "🔄 Redirecting request [{0}] to node {1}", new Object[]{line, targetNode});
-            String response = ClusterClient.sendRequest(targetNode, line);
-
-            if (!response.equals(ERROR)) {
-                sendResponse(response);
+            if (!socket.isClosed()) {
+                log.log(Level.SEVERE, "❌ Communication error with client: {0}", socket.getRemoteSocketAddress());
             } else {
-                log.log(Level.SEVERE, "❌ Failed to process command [{0}] on node {1}", new Object[]{line, targetNode});
-                sendResponse("ERROR: Failed to process request");
+                log.log(Level.INFO, "🔌 Client disconnected: {0}", socket.getRemoteSocketAddress());
             }
-            return true;
+        } finally {
+            closeClientConnection();
         }
-        return false;
+    }
+
+    /**
+     * Processes a single command from the client.
+     */
+    private String handleCommand(String commandLine) {
+        log.log(Level.INFO, "📩 Received command: {0}", commandLine);
+        String[] parts = commandLine.split(" ");
+
+        if (parts.length == 0 || parts[0].isEmpty()) {
+            return "ERROR: Invalid command.";
+        }
+
+        String command = parts[0].toUpperCase();
+
+        if ("EXIT".equals(command)) {
+            return handleExit();
+        }
+
+        // Add command handling logic as needed
+        return commandRegistry.executeCommand(command, null, null);
+    }
+
+    /**
+     * Handles the EXIT command and closes the socket.
+     */
+    private String handleExit() {
+        log.log(Level.INFO, "🔌 Client requested disconnect: {0}", socket.getRemoteSocketAddress());
+        outputWriter.println(BYE);
+        closeClientConnection();
+        return null;
+    }
+
+    /**
+     * Closes the client connection and releases resources.
+     */
+    private void closeClientConnection() {
+        try {
+            if (!socket.isClosed()) {
+                inputReader.close();
+                outputWriter.close();
+                socket.close();
+                log.log(Level.INFO, "✅ Client connection closed: {0}", socket.getRemoteSocketAddress());
+            }
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Error while closing client connection: {0}", e.getMessage());
+        }
     }
 }
