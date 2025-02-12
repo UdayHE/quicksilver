@@ -10,7 +10,9 @@ import static io.github.udayhe.quicksilver.constant.Constants.NULL;
 
 public class Get<K, V> implements Command<K, V> {
 
-    private static final Logger log = Logger.getLogger(Get.class.getName());
+    private static final Logger logger = Logger.getLogger(Get.class.getName());
+    private static final String LOG_TEMPLATE = "📤 GET command executed: {0} -> {1}";
+
     private final DB<K, V> db;
 
     public Get(DB<K, V> db) {
@@ -20,8 +22,11 @@ public class Get<K, V> implements Command<K, V> {
     @Override
     public String execute(K key, V unused) {
         V value = db.get(key);
-        log.log(Level.INFO, "📤 GET command: {0} -> {1}", new Object[]{key, value});
+        logger.log(Level.INFO, LOG_TEMPLATE, new Object[]{key, value});
+        return getResult(value);
+    }
+
+    private String getResult(V value) {
         return value != null ? value.toString() : NULL;
     }
 }
-

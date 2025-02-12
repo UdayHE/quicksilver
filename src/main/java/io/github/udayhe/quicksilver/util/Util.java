@@ -15,7 +15,7 @@ public class Util {
      * @return Resolved port number
      */
     public static int getPort(String[] args) {
-        int port = Config.getInstance().getPort();
+        int port = Config.getInstance().getServerPort();
         port = getPortFromEnv(port);
         return getPortFromArgs(args, port);
     }

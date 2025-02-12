@@ -8,10 +8,11 @@ import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.OK;
 
-
 public class Del<K, V> implements Command<K, V> {
 
     private static final Logger log = Logger.getLogger(Del.class.getName());
+    private static final String LOG_TEMPLATE = "🗑️ DEL command executed: Key = {0}";
+
     private final DB<K, V> db;
 
     public Del(DB<K, V> db) {
@@ -19,9 +20,13 @@ public class Del<K, V> implements Command<K, V> {
     }
 
     @Override
-    public String execute(K key, V unused) {
-        db.delete(key);
-        log.log(Level.INFO, "🗑️ DEL command executed: {0}", key);
+    public String execute(K key, V ignoredValue) {
+        deleteKey(key);
+        log.log(Level.INFO, LOG_TEMPLATE, key);
         return OK;
+    }
+
+    private void deleteKey(K key) {
+        db.delete(key);
     }
 }

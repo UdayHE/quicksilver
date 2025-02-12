@@ -24,7 +24,7 @@ public class ClusterService<K> {
 
     public void syncDataFromCluster(DB db) {
         for (ClusterNode node : clusterManager.getNodes()) {
-            if (!isLocalNode(node, Config.getInstance().getPort())) {
+            if (!isLocalNode(node, Config.getInstance().getServerPort())) {
                 log.log(Level.INFO, "🔄 Syncing data from {0}", node);
                 String response = ClusterClient.sendRequest(node, DUMP.name());
                 db.restoreData(response);

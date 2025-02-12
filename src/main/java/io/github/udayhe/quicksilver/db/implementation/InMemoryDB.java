@@ -4,6 +4,7 @@ import io.github.udayhe.quicksilver.db.DB;
 import io.github.udayhe.quicksilver.threads.ThreadPoolManager;
 
 import java.io.*;
+import java.io.Serial;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,31 +21,26 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
 
     private static final Logger log = Logger.getLogger(InMemoryDB.class.getName());
 
+    // Constants for expiration task schedule
+    private static final long EXPIRATION_INITIAL_DELAY = 1;
+    private static final long EXPIRATION_INTERVAL = 1;
+
     private final int maxSize;
     private final Map<K, V> store;
     private final ConcurrentHashMap<K, Long> expirationMap = new ConcurrentHashMap<>();
 
-    private transient ScheduledExecutorService expirationService = ThreadPoolManager.getInstance().getScheduler();
+    private transient ScheduledExecutorService expirationService = ThreadPoolManager.getInstance().getScheduledExecutorService();
     private transient BiConsumer<K, V> evictionListener = (key, _) -> {};
 
     public InMemoryDB(int maxSize) {
         this.maxSize = maxSize;
-        this.store = new LinkedHashMap<>(maxSize, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-                boolean shouldRemove = size() > InMemoryDB.this.maxSize; // Enforce max size
-                if (shouldRemove)
-                    evictionListener.accept(eldest.getKey(), eldest.getValue());
-                return shouldRemove;
-            }
-        };
+        this.store = createEvictionEnabledStore(); // Extracted method
         startExpirationTask();
     }
 
     public void setEvictionListener(BiConsumer<K, V> listener) {
         this.evictionListener = listener;
     }
-
 
     @Override
     public void set(K key, V value, long ttlMillis) {
@@ -54,49 +50,43 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
         }
     }
 
-    // ✅ Get a value by key
     @Override
     public V get(K key) {
         if (isExpired(key)) {
-            removeKey(key);
+            evictKey(key); // Renamed method
             return null;
         }
         return store.get(key);
     }
 
-    // ✅ Delete a key
     @Override
     public void delete(K key) {
-        removeKey(key);
+        evictKey(key); // Renamed method
     }
 
-    // ✅ Clear all entries
     @Override
     public void clear() {
         store.clear();
         expirationMap.clear();
     }
 
-    // ✅ Save data to disk (Persistence)
     @Override
     public void saveToDisk(String filename) {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
             out.writeObject(store);
-            log.log(Level.INFO, "💾 Database saved to {0}", filename);
+            log.log(Level.INFO, "Database saved to {0}", filename);
         } catch (IOException e) {
-            log.log(Level.SEVERE, "❌ Error saving database.", e);
+            log.log(Level.SEVERE, "Error saving database.", e);
         }
     }
 
-    // ✅ Load data from disk
     @Override
     public void loadFromDisk(String filename) {
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
-            Map<K, V> loadedStore = (Map<K, V>) in.readObject();
-            store.putAll(loadedStore);
-            log.log(Level.INFO, "🔄 Database loaded from {0}", filename);
+            store.putAll((Map<K, V>) in.readObject()); // Inlined unnecessary variable
+            log.log(Level.INFO, "Database loaded from {0}", filename);
         } catch (IOException | ClassNotFoundException e) {
-            log.severe("❌ Error loading database."+ e);
+            log.log(Level.SEVERE, "Error loading database.", e);
         }
     }
 
@@ -116,15 +106,29 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
         }
     }
 
-    private boolean isExpired(K key) {
-        Long expiry = expirationMap.get(key);
-        return expiry != null && System.currentTimeMillis() > expiry;
+    // Extracted method to create store with eviction enabled via LinkedHashMap
+    private Map<K, V> createEvictionEnabledStore() {
+        return new LinkedHashMap<>(maxSize, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+                boolean shouldRemove = size() > InMemoryDB.this.maxSize;
+                if (shouldRemove)
+                    evictionListener.accept(eldest.getKey(), eldest.getValue());
+                return shouldRemove;
+            }
+        };
     }
 
-    private void removeKey(K key) {
+    // Logic renamed for better readability
+    private void evictKey(K key) {
         V value = store.remove(key);
         expirationMap.remove(key);
         evictionListener.accept(key, value);
+    }
+
+    private boolean isExpired(K key) {
+        Long expiry = expirationMap.get(key);
+        return expiry != null && System.currentTimeMillis() > expiry;
     }
 
     private void startExpirationTask() {
@@ -132,28 +136,24 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
             long now = System.currentTimeMillis();
             expirationMap.forEach((key, expiry) -> {
                 if (expiry < now) {
-                    removeKey(key);
+                    evictKey(key);
                 }
             });
-        }, 1, 1, TimeUnit.SECONDS);
+        }, EXPIRATION_INITIAL_DELAY, EXPIRATION_INTERVAL, TimeUnit.SECONDS); // Extracted constants
     }
 
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject(); // Serialize default fields (store, expirationMap, maxSize)
-        log.log(Level.INFO, "💾 Serializing InMemoryDB...");
+        out.defaultWriteObject();
+        log.log(Level.INFO, "Serializing InMemoryDB...");
     }
 
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject(); // Deserialize default fields
-        log.log(Level.INFO, "🔄 Deserializing InMemoryDB...");
-
-        // Reinitialize non-serializable fields
-        expirationService = ThreadPoolManager.getInstance().getScheduler();
-        evictionListener = (key, _) -> {
-        }; // Reset eviction listener
-        startExpirationTask(); // Restart background expiration task
+        in.defaultReadObject();
+        log.log(Level.INFO, "Deserializing InMemoryDB...");
+        expirationService = ThreadPoolManager.getInstance().getScheduledExecutorService();
+        evictionListener = (key, _) -> {};
+        startExpirationTask();
     }
-
 }

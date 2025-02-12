@@ -35,13 +35,13 @@ public class Server<K, V> {
         this.db = db;
         this.pubSubManager = pubSubManager;
         this.clusterService = new ClusterService<>();
-        this.clientThreadPool = ThreadPoolManager.getInstance().getScheduler();
+        this.clientThreadPool = ThreadPoolManager.getInstance().getScheduledExecutorService();
         addShutdownHook();
     }
 
     public static void main(String[] args) {
         int port = getPort(args);
-        DBType dbType = DBType.valueOf(Config.getInstance().getDBType().toUpperCase());
+        DBType dbType = DBType.valueOf(Config.getInstance().getDatabaseType().toUpperCase());
         DB<String, Object> db = DatabaseFactory.createDatabase(dbType);
         new Server<>(port, db, new PubSubManager()).start();
     }

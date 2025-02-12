@@ -14,6 +14,8 @@ import static io.github.udayhe.quicksilver.constant.Constants.SPACE;
 public class Dump<K, V> implements Command<K, V> {
 
     private static final Logger log = Logger.getLogger(Dump.class.getName());
+    private static final String LOG_TEMPLATE = "📤 Dumping database data";
+
     private final DB<K, V> db;
 
     public Dump(DB<K, V> db) {
@@ -21,11 +23,13 @@ public class Dump<K, V> implements Command<K, V> {
     }
 
     @Override
-    public String execute(K unusedKey, V unusedValue) {
-        log.log(Level.INFO, "📤 Dumping database data");
+    public String execute(K _key, V _value) {
+        log.log(Level.INFO, LOG_TEMPLATE);
+        final Map<K, V> data = db.getAll();
+        return serializeData(data);
+    }
 
-        // Serialize all data into a string format
-        Map<K, V> data = db.getAll();
+    private String serializeData(Map<K, V> data) {
         return data.entrySet().stream()
                 .map(entry -> entry.getKey() + SPACE + entry.getValue())
                 .collect(Collectors.joining(NEW_LINE));
