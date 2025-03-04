@@ -40,7 +40,7 @@ public class Constants {
     public static final int DEFAULT_TOTAL_SHARD = 4;
     public static final int DEFAULT_LRU_MAX_SIZE = 100;
     public static final int DEFAULT_TERMINATION_TIMEOUT = 5;
-
+    public static final long DEFAULT_TTL = 0L;
 
     public static final String LOGO = NEW_LINE + """
                  ██████╗ ██╗   ██╗██╗ ██████╗██╗  ██╗     ███████╗██╗██╗    ██╗   ██╗███████╗██████╗\s

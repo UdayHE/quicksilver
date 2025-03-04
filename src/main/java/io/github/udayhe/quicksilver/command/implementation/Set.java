@@ -6,13 +6,13 @@ import io.github.udayhe.quicksilver.db.DB;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static io.github.udayhe.quicksilver.constant.Constants.DEFAULT_TTL;
 import static io.github.udayhe.quicksilver.constant.Constants.OK;
 
 public class Set<K, V> implements Command<K, V> {
 
     private static final Logger log = Logger.getLogger(Set.class.getName());
     private static final String LOG_TEMPLATE = "✅ SET command executed: {0} -> {1}";
-    private static final long DEFAULT_TTL = 0L; // Default TTL value
 
     private final DB<K, V> db;
 
