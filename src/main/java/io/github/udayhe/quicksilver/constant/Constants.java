@@ -34,7 +34,7 @@ public class Constants {
 
 
     //Other
-    public static final int DEFAULT_THREAD_POOL_SIZE = 1;
+    public static final int DEFAULT_THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors() * 2;
     public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_SHARD_SIZE = 50;
     public static final int DEFAULT_TOTAL_SHARD = 4;
