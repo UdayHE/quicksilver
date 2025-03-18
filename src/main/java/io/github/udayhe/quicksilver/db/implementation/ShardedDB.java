@@ -93,9 +93,8 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
         String[] entries = dataDump.split(NEW_LINE);
         for (String entry : entries) {
             String[] kv = entry.split(SPACE);
-            if (kv.length == 2) {
+            if (kv.length == 2)
                 set((K) kv[0], (V) kv[1], 0);
-            }
         }
     }
 
