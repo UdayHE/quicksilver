@@ -47,7 +47,8 @@ public class ShardedDB<K, V> implements DB<K, V>, Serializable {
             log.log(Level.INFO, "📤 GET command: Found key {0} in shard {1}", new Object[]{key, shardIndex});
             return shard.get(key);
         } else {
-            log.log(Level.WARNING, "⚠️ GET command: Key {0} not found in shard {1}", new Object[]{key, shardIndex});
+            log.log(Level.WARNING, "⚠️ GET command: Key {0} not found in shard {1}",
+                    new Object[]{key, shardIndex});
             return null;
         }
     }

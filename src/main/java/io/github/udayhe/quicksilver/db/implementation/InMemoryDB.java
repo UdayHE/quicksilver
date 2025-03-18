@@ -29,7 +29,8 @@ public class InMemoryDB<K, V> implements DB<K, V>, Serializable {
     private final Map<K, V> store;
     private final ConcurrentHashMap<K, Long> expirationMap = new ConcurrentHashMap<>();
 
-    private transient ScheduledExecutorService expirationService = ThreadPoolManager.getInstance().getScheduledExecutorService();
+    private transient ScheduledExecutorService expirationService =
+            ThreadPoolManager.getInstance().getScheduledExecutorService();
     private transient BiConsumer<K, V> evictionListener = (key, _) -> {};
 
     public InMemoryDB(int maxSize) {

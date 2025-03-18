@@ -32,7 +32,8 @@ public class ThreadPoolManager {
     public void shutdown() {
         try {
             scheduledExecutorService.shutdown();
-            if (!scheduledExecutorService.awaitTermination(Config.getInstance().getThreadPoolTerminationTimeout(), SECONDS)) {
+            if (!scheduledExecutorService
+                    .awaitTermination(Config.getInstance().getThreadPoolTerminationTimeout(), SECONDS)) {
                 forceShutdown();
             }
         } catch (InterruptedException e) {

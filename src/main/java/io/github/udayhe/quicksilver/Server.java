@@ -59,7 +59,8 @@ public class Server<K, V> {
                 clientThreadPool.execute(() -> handleClient(clientSocket));
             }
         } catch (IOException e) {
-            log.log(Level.SEVERE, "❌ Error starting QuickSilverServer on port {0} exception:{1}", new Object[]{port, e});
+            log.log(Level.SEVERE, "❌ Error starting QuickSilverServer on port {0} exception:{1}",
+                    new Object[]{port, e});
         }
     }
 
@@ -68,8 +69,8 @@ public class Server<K, V> {
             ClientHandler<K, V> clientHandler = new ClientHandler<>(socket, db, clusterService, pubSubManager);
             clientThreadPool.execute(clientHandler);
         } catch (IOException e) {
-            log.severe("❌ Failed to start ClientHandler for client " + socket.getRemoteSocketAddress() + " exception:" + e);
-            log.log(Level.SEVERE, "❌ Failed to start ClientHandler for client {0} exception:{1}", new Object[]{socket.getRemoteSocketAddress(), e});
+            log.log(Level.SEVERE, "❌ Failed to start ClientHandler for client {0} exception:{1}",
+                    new Object[]{socket.getRemoteSocketAddress(), e});
         }
     }
 

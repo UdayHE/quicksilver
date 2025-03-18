@@ -29,7 +29,8 @@ public class ClientHandler<K, V> implements Runnable {
     private final CommandRegistry<K, V> commandRegistry;
     private final ClusterService<K> clusterService;
 
-    public ClientHandler(Socket socket, DB<K, V> db, ClusterService<K> clusterService, PubSubManager pubSubManager) throws IOException {
+    public ClientHandler(Socket socket, DB<K, V> db, ClusterService<K> clusterService, PubSubManager pubSubManager)
+            throws IOException {
         this.socket = socket;
         this.db = db;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -112,7 +113,8 @@ public class ClientHandler<K, V> implements Runnable {
             if (!response.equals(ERROR)) {
                 sendResponse(response);
             } else {
-                log.log(Level.SEVERE, "❌ Failed to process command [{0}] on node {1}", new Object[]{line, targetNode});
+                log.log(Level.SEVERE, "❌ Failed to process command [{0}] on node {1}",
+                        new Object[]{line, targetNode});
                 sendResponse("ERROR: Failed to process request");
             }
             return true;
