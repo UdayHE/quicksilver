@@ -49,6 +49,7 @@ public class Server<K, V> {
     public void start() {
         log.info(LOGO);
         try (ServerSocket serverSocket = new ServerSocket(port)) {
+            serverSocket.setReuseAddress(true);
             log.log(Level.INFO, "🚀 QuickSilverServer DB started on port {0}", port);
             clusterService.registerInCluster(this.port);
             clusterService.syncDataFromCluster(this.db);
