@@ -74,6 +74,14 @@ public class Server<K, V> {
         }
     }
 
+    /**
+     * Returns the cluster service instance for this server
+     * @return ClusterService instance
+     */
+    public ClusterService<K> getClusterService() {
+        return clusterService;
+    }
+
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("🛑 Server shutting down...");

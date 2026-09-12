@@ -6,119 +6,182 @@ import io.github.udayhe.quicksilver.cluster.ClusterService;
 import io.github.udayhe.quicksilver.command.CommandRegistry;
 import io.github.udayhe.quicksilver.db.DB;
 import io.github.udayhe.quicksilver.pubsub.PubSubManager;
+import io.github.udayhe.quicksilver.resp.RespEncoder;
+import io.github.udayhe.quicksilver.resp.RespParser;
+import io.github.udayhe.quicksilver.resp.value.BulkString;
+import io.github.udayhe.quicksilver.resp.value.RespArray;
+import io.github.udayhe.quicksilver.resp.value.RespError;
+import io.github.udayhe.quicksilver.resp.value.RespValue;
+import io.github.udayhe.quicksilver.resp.value.SimpleString;
+import io.github.udayhe.quicksilver.security.ConnectionLimits;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static io.github.udayhe.quicksilver.constant.Constants.*;
-import static io.github.udayhe.quicksilver.enums.Command.*;
+import static io.github.udayhe.quicksilver.enums.Command.DUMP;
+import static io.github.udayhe.quicksilver.enums.Command.EXIT;
+import static io.github.udayhe.quicksilver.enums.Command.FLUSH;
 import static io.github.udayhe.quicksilver.util.ClusterUtil.isLocalNode;
 
+/**
+ * Handles a single client connection for its full lifetime.
+ *
+ * Protocol flow:
+ *  1. Parse one {@link RespValue} per iteration (RESP array or plain-text inline).
+ *  2. If the key belongs to another cluster node, forward the raw args via
+ *     {@link ClusterClient} and relay the response.
+ *  3. Otherwise dispatch to {@link CommandRegistry} and encode the reply.
+ *
+ * Security measures:
+ *  - {@link ConnectionLimits#SOCKET_TIMEOUT_MS} idle read timeout.
+ *  - Key length capped at {@link ConnectionLimits#MAX_KEY_BYTES}.
+ *  - Bulk-string and array size limits enforced inside {@link RespParser}.
+ *  - All I/O is buffered to minimise system-call overhead.
+ */
 public class ClientHandler<K, V> implements Runnable {
 
     private static final Logger log = Logger.getLogger(ClientHandler.class.getName());
+
     private final Socket socket;
-    private final DB<K, V> db;
-    private final BufferedReader in;
-    private final PrintWriter out;
+    private final OutputStream out;
+    private final RespParser parser;
     private final CommandRegistry<K, V> commandRegistry;
     private final ClusterService<K> clusterService;
 
-    public ClientHandler(Socket socket, DB<K, V> db, ClusterService<K> clusterService, PubSubManager pubSubManager)
-            throws IOException {
+    public ClientHandler(Socket socket,
+                         DB<K, V> db,
+                         ClusterService<K> clusterService,
+                         PubSubManager pubSubManager) throws IOException {
         this.socket = socket;
-        this.db = db;
-        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true);
-        this.clusterService = clusterService;
-        this.commandRegistry = new CommandRegistry<>(db, clusterService.getClusterManager(), pubSubManager, socket);
+        socket.setSoTimeout(ConnectionLimits.SOCKET_TIMEOUT_MS);
+        this.out    = new BufferedOutputStream(socket.getOutputStream());
+        this.parser = new RespParser(new BufferedInputStream(socket.getInputStream()));
+        this.clusterService  = clusterService;
+        this.commandRegistry = new CommandRegistry<>(
+                db, clusterService.getClusterManager(), pubSubManager, out);
     }
 
     @Override
     public void run() {
-        log.log(Level.INFO,"📡 New client connected: {0}", socket.getRemoteSocketAddress());
+        log.log(Level.INFO, "Client connected: {0}", socket.getRemoteSocketAddress());
         try {
-            String line;
-            out.println(LOGO);
-            while ((line = in.readLine()) != null) {
-                log.log(Level.WARNING,"📩 Received command: {0}", line);
-                String[] parts = line.trim().split(SPACE);
-                if (parts.length == 0) continue;
-
-                String cmd = parts[0].toUpperCase();
-                K key = (parts.length > 1) ? (K) parts[1] : null;
-                V value = (parts.length > 2) ? (V) parts[2] : null;
-
-                if(exit(cmd)) return;
-                if(handleSpecialCommands(cmd)) continue;
-
-                ClusterNode targetNode = clusterService.getResponsibleNode(key);
-                if (redirectToOtherNode(targetNode, line))
-                    continue;
-
-                String response = commandRegistry.executeCommand(cmd, key, value);
-                sendResponse(response);
+            RespValue request;
+            while ((request = parser.parse()) != null) {
+                if (!processRequest(request)) break;
             }
+        } catch (SocketTimeoutException e) {
+            log.log(Level.INFO, "Client idle timeout: {0}", socket.getRemoteSocketAddress());
+            writeErrorQuietly("ERR connection timed out");
         } catch (IOException e) {
-            log.log(Level.SEVERE, "❌ Client communication error", e);
-        }
-    }
-
-
-    /**
-     * Sends a response back to the client
-     */
-    public void sendResponse(String response) {
-        out.println(response);
-    }
-
-    /**
-     * 🛠️ Handles commands that do not require key-value pairs (like FLUSH & DUMP)
-     */
-    private boolean handleSpecialCommands(String command) {
-        if (command.equalsIgnoreCase(FLUSH.name()) || command.equalsIgnoreCase(DUMP.name())) {
-            String response = commandRegistry.executeCommand(command, null, null);
-            sendResponse(response);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 🔌 Handles the EXIT command
-     */
-    private boolean exit(String command) throws IOException {
-        if (command.equalsIgnoreCase(EXIT.name())) {
-            log.log(Level.INFO, "🔌 Client disconnected: {0}", socket.getRemoteSocketAddress());
-            sendResponse(BYE);
-            socket.close();
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 🔄 Redirects request to the correct cluster node (if necessary)
-     */
-    private boolean redirectToOtherNode(ClusterNode targetNode, String line) {
-        if (!isLocalNode(targetNode, socket.getLocalPort())) {
-            log.log(Level.INFO, "🔄 Redirecting request [{0}] to node {1}", new Object[]{line, targetNode});
-            String response = ClusterClient.sendRequest(targetNode, line);
-
-            if (!response.equals(ERROR)) {
-                sendResponse(response);
-            } else {
-                log.log(Level.SEVERE, "❌ Failed to process command [{0}] on node {1}",
-                        new Object[]{line, targetNode});
-                sendResponse("ERROR: Failed to process request");
+            if (!socket.isClosed()) {
+                log.log(Level.WARNING, "Client I/O error [{0}]: {1}",
+                        new Object[]{socket.getRemoteSocketAddress(), e.getMessage()});
             }
+        } finally {
+            closeQuietly();
+        }
+        log.log(Level.INFO, "Client disconnected: {0}", socket.getRemoteSocketAddress());
+    }
+
+    /**
+     * Processes one parsed request.
+     *
+     * @return {@code false} when the connection should be closed after this response
+     */
+    private boolean processRequest(RespValue request) throws IOException {
+        if (!(request instanceof RespArray array) || array.isNil()) {
+            RespEncoder.writeError(out, "ERR invalid request format");
             return true;
         }
-        return false;
+
+        List<RespValue> elements = array.elements();
+        if (elements == null || elements.isEmpty()) return true;
+
+        String cmd = extractString(elements, 0);
+        if (cmd == null) {
+            RespEncoder.writeError(out, "ERR command name is missing or not a string");
+            return true;
+        }
+        cmd = cmd.toUpperCase();
+
+        // EXIT signals connection teardown — reply then let the loop end.
+        if (EXIT.name().equals(cmd)) {
+            RespEncoder.writeSimpleString(out, "BYE");
+            return false;
+        }
+
+        // FLUSH / DUMP are store-wide; no key needed and no cluster routing.
+        if (FLUSH.name().equals(cmd) || DUMP.name().equals(cmd)) {
+            RespEncoder.write(out, commandRegistry.executeCommand(cmd, null, null));
+            return true;
+        }
+
+        K key   = elements.size() > 1 ? castKey(extractString(elements, 1)) : null;
+        V value = elements.size() > 2 ? castValue(extractString(elements, 2)) : null;
+
+        // Security: reject oversized keys before reaching storage.
+        if (key instanceof String keyStr && keyStr.length() > ConnectionLimits.MAX_KEY_BYTES) {
+            RespEncoder.writeError(out, "ERR key exceeds maximum allowed size");
+            return true;
+        }
+
+        // Cluster routing: forward to the responsible node when it is not local.
+        ClusterNode target = clusterService.getResponsibleNode(key);
+        if (target != null && !isLocalNode(target, socket.getLocalPort())) {
+            forwardToNode(target, elements);
+            return true;
+        }
+
+        RespEncoder.write(out, commandRegistry.executeCommand(cmd, key, value));
+        return true;
+    }
+
+    /** Forwards the raw command args to another cluster node and relays its reply. */
+    private void forwardToNode(ClusterNode target, List<RespValue> elements) throws IOException {
+        String[] args = elements.stream()
+                .map(e -> e instanceof BulkString bs ? bs.asString() : null)
+                .toArray(String[]::new);
+        log.log(Level.INFO, "Forwarding {0} to cluster node {1}", new Object[]{args[0], target});
+        Optional<RespValue> reply = ClusterClient.sendCommandWithResponse(target, args);
+        RespEncoder.write(out, reply.orElse(RespError.err("cluster forwarding failed")));
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    private String extractString(List<RespValue> elements, int index) {
+        if (index >= elements.size()) return null;
+        return switch (elements.get(index)) {
+            case BulkString bs   -> bs.asString();
+            case SimpleString ss -> ss.value();
+            default              -> null;
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private K castKey(String s)   { return (K) s; }
+
+    @SuppressWarnings("unchecked")
+    private V castValue(String s) { return (V) s; }
+
+    private void writeErrorQuietly(String message) {
+        try { RespEncoder.writeError(out, message); } catch (IOException ignored) {}
+    }
+
+    private void closeQuietly() {
+        try {
+            if (!socket.isClosed()) socket.close();
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Error closing client socket", e);
+        }
     }
 }

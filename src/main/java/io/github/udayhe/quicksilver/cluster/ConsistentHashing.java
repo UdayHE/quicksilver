@@ -29,4 +29,8 @@ public class ConsistentHashing<K> {
         int nodeHash = tailMap.isEmpty() ? ring.firstKey() : tailMap.firstKey();
         return ring.get(nodeHash);
     }
+
+    public int getRingSize() {
+        return this.ring.size();
+    }
 }

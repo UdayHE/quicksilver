@@ -5,7 +5,12 @@ plugins {
 
 group = 'io.github.udayhe.quicksilver'
 version = '1.0-SNAPSHOT'
-sourceCompatibility = '22'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(22)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -16,9 +21,22 @@ application {
 }
 
 dependencies {
-    // JUnit for testing
-    testImplementation platform('org.junit:junit-bom:5.10.0')
+    /* =======================
+       JUnit 5
+       ======================= */
+    testImplementation platform('org.junit:junit-bom:5.10.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.platform:junit-platform-suite'
+
+    /* =======================
+       Mockito (Java 22 safe)
+       ======================= */
+    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 jar {
@@ -28,17 +46,14 @@ jar {
         )
     }
 
-    // Ensure JAR includes dependencies for standalone execution
     from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-test {
-    useJUnitPlatform()
-}
-
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // UTF-8 support for logs/messages
+    options.encoding = 'UTF-8'
 }

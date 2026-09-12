@@ -2,17 +2,18 @@ package io.github.udayhe.quicksilver.command.implementation;
 
 import io.github.udayhe.quicksilver.command.Command;
 import io.github.udayhe.quicksilver.db.DB;
+import io.github.udayhe.quicksilver.resp.value.RespError;
+import io.github.udayhe.quicksilver.resp.value.RespValue;
+import io.github.udayhe.quicksilver.resp.value.SimpleString;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static io.github.udayhe.quicksilver.constant.Constants.DEFAULT_TTL;
-import static io.github.udayhe.quicksilver.constant.Constants.OK;
 
 public class Set<K, V> implements Command<K, V> {
 
     private static final Logger log = Logger.getLogger(Set.class.getName());
-    private static final String LOG_TEMPLATE = "✅ SET command executed: {0} -> {1}";
 
     private final DB<K, V> db;
 
@@ -21,13 +22,10 @@ public class Set<K, V> implements Command<K, V> {
     }
 
     @Override
-    public String execute(K key, V value) {
-        setKeyValue(key, value);
-        log.log(Level.INFO, LOG_TEMPLATE, new Object[]{key, value});
-        return OK;
-    }
-
-    private void setKeyValue(K key, V value) {
+    public RespValue execute(K key, V value) {
+        if (key == null) return RespError.wrongArgs("set");
         db.set(key, value, DEFAULT_TTL);
+        log.log(Level.INFO, "SET {0} -> {1}", new Object[]{key, value});
+        return new SimpleString("OK");
     }
 }

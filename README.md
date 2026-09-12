@@ -1,249 +1,304 @@
-# 🚀 QuickSilver
-## In-Memory Distributed Database
-QuickSilver is an open-source high-performance, in-memory key-value store with sharding, persistence, and multi-threaded client handling. <br> 
-Designed for speed, scalability, and flexibility, it supports multiple database backends (InMemoryDB, ShardedDB), and persists data to disk.<br>
+# QuickSilver
+## In-Memory Distributed Key-Value Store
 
-## 📌 Features
-✅ In-Memory Storage – Fast key-value operations  <br>
-✅ Sharding Support – Distributes data across multiple instances  <br>
-✅ LRU Eviction – Removes least-recently used entries when full  <br>
-✅ Persistence – Saves and loads data from disk  <br>
-✅ Multi-threaded – Uses a thread pool for efficient client handling  <br>
-✅ Command Pattern – Extensible command execution  <br>
-✅ Cluster Support – Distribute data across multiple nodes  <br>
-✅ Pub/Sub System – Publish and subscribe to topics for real-time messaging  <br>
-✅ Consistent Hashing – Efficiently distributes keys across cluster nodes  <br>
-✅ TTL Support – Automatic expiration of keys after a specified time  <br>
+QuickSilver is a high-performance, in-memory key-value store with full **RESP (Redis Serialization Protocol)** support, sharding, clustering, pub/sub messaging, TTL expiration, and disk persistence.
 
-## 🏗️ Architecture Overview
+Because it speaks the Redis wire protocol, any Redis client — including `redis-cli` — works with QuickSilver out of the box.
 
-QuickSilver follows a modular, layered architecture designed for high performance and scalability:
+---
 
-### Core Components
+## Features
 
-1. **Server Layer**
-   - Main entry point (`Server.java`) that initializes the database, cluster service, and client handling
-   - Manages server lifecycle, including graceful shutdown with data persistence
-   - Handles client connections through a thread pool for concurrent request processing
+- **RESP Protocol** — Full Redis wire-protocol support; compatible with `redis-cli` and any Redis client library
+- **Inline command fallback** — Plain-text commands via `telnet`/`nc` also accepted
+- **In-Memory Storage** — Sub-millisecond GET/SET latency
+- **LRU Eviction** — Evicts least-recently used entries when the store is full
+- **TTL Support** — Automatic key expiration via background sweep
+- **Sharding** — Distributes data across `N` in-memory shards
+- **Consistent Hashing** — Efficient key routing across cluster nodes with minimal rehashing
+- **Clustering** — Multi-node deployment with automatic data sync on startup
+- **Pub/Sub** — Topic-based real-time message fan-out
+- **Persistence** — Save/restore the data set to/from disk
+- **Security limits** — Max key size, bulk-string size, array depth, and idle-timeout enforced at the protocol layer
+- **Command Pattern** — Stateless, extensible command implementations
 
-2. **Client Handling**
-   - `ClientHandler.java` manages individual client connections
-   - Implements command routing and cluster redirection logic
-   - Handles special commands (FLUSH, DUMP) and client lifecycle management
+---
 
-3. **Command Processing**
-   - `CommandRegistry.java` implements the Command Pattern for extensible operations
-   - Supports both database operations (SET, GET, DEL) and pub/sub operations (PUBLISH, SUBSCRIBE, UNSUBSCRIBE)
-   - Commands are stateless and can be easily extended
+## Architecture
 
-4. **Database Layer**
-   - **InMemoryDB**: LRU-eviction based in-memory store with TTL support
-   - **ShardedDB**: Distributes data across multiple InMemoryDB instances using consistent hashing
-   - Both implementations support persistence through serialization
-
-5. **Clustering System**
-   - `ClusterService`: Manages cluster-wide operations and data synchronization
-   - `ConsistentHashing`: Distributes keys across cluster nodes efficiently
-   - `ClusterClient`: Handles inter-node communication for distributed operations
-   - Automatic data synchronization across cluster nodes during startup
-
-6. **Pub/Sub System**
-   - `PubSubManager`: Manages topic-based publish/subscribe messaging
-   - Real-time message distribution to subscribed clients
-   - Thread-safe subscriber management using concurrent collections
-
-7. **Configuration & Utilities**
-   - `Config.java`: Singleton configuration manager with property file support
-   - `ThreadPoolManager`: Centralized thread pool management with graceful shutdown
-   - Utility classes for cluster operations and common functionality
-
-## 📂 Project Structure
-```shell
-📦 quicksilver
-├── 📂 src
-│   ├── 📂 main
-│   │   ├── 📂 io.github.udayhe.quicksilver
-│   │   │   ├── 📂 client
-│   │   │   │   ├── ClientHandler.java       # Handles client connections
-│   │   │   ├── 📂 cluster
-│   │   │   │   ├── ClusterClient.java       # Sends commands to cluster nodes
-│   │   │   │   ├── ClusterManager.java      # Manages Cluster nodes
-│   │   │   │   ├── ClusterNode.java         # Cluster node
-│   │   │   │   ├── ClusterService.java      # Serves the cluster
-│   │   │   │   ├── ConsistentHashing.java   # ConsistentHashing
-│   │   │   ├── 📂 command
-│   │   │   │   ├── 📂 implementation
-│   │   │   │   │   ├── Del.java             # DELETE command
-│   │   │   │   │   ├── Exit.java            # EXIT command
-│   │   │   │   │   ├── Flush.java           # FLUSH command
-│   │   │   │   │   ├── Get.java             # GET command
-│   │   │   │   │   ├── Set.java             # SET command
-│   │   │   │   │   ├── Subscribe.java       # SUBSCRIBE command
-│   │   │   │   │   ├── Unsubscribe.java     # UNSUBSCRIBE command
-│   │   │   │   │   ├── Publish.java         # PUBLISH command
-│   │   │   │   ├── Command.java             # Command interface
-│   │   │   │   ├── CommandRegistry.java     # Manages command execution
-│   │   │   ├── 📂 config
-│   │   │   │   ├── Config.java              # Reads and manages configuration
-│   │   │   ├── 📂 constant
-│   │   │   │   ├── Constants.java           # Application-wide constants
-│   │   │   ├── 📂 db
-│   │   │   │   ├── 📂 implementation
-│   │   │   │   │   ├── InMemoryDB.java      # In-memory key-value store
-│   │   │   │   │   ├── ShardedDB.java       # Sharded database implementation
-│   │   │   │   ├── DatabaseFactory.java     # Factory to create DB instances
-│   │   │   │   ├── DB.java                  # Generic database interface
-│   │   │   ├── 📂 enums                     
-│   │   │   │   ├── Command.java             # Enum for commands  
-│   │   │   │   ├── DBType.java              # Enum for database types
-│   │   │   ├── 📂 threads
-│   │   │   │   ├── ThreadPoolManager.java   # Centralized thread pool manager
-│   │   │   ├── 📂 util
-│   │   │   │   ├── ClusterUtil.java         # Cluster related utility methods
-│   │   │   │   ├── Util.java                # Utility class
-│   │   │   ├── Server.java                  # Main server entry point
-│   │   ├── 📂 resources
-│   │   │   ├── config.properties            # Configurations (port, shards, etc.)
-├── 📂 test                                  # Unit tests
-├── 📜 .gitignore                            # Git ignore rules
-├── 📜 build.gradle                          # Gradle build file
-├── 📜 Dockerfile                            # Docker configuration
-├── 📜 gradlew                               # Gradle wrapper
-├── 📜 LICENSE                               # License file
-├── 📜 README.md                             # Project documentation
-├── 📜 settings.gradle                       # Gradle settings
+### Layers
 
 ```
+Client (redis-cli / telnet / any RESP client)
+        │  TCP
+        ▼
+  ClientHandler          ← RESP parse → dispatch → RESP encode
+        │
+        ├─ CommandRegistry   ← Command Pattern; routes to command implementations
+        │       └─ Set / Get / Del / Flush / Dump / Subscribe / Unsubscribe / Publish / Exit
+        │
+        ├─ ClusterService    ← consistent-hashing ring; forwards to remote node if needed
+        │       └─ ClusterClient  ← inter-node RESP client (fire-and-forget / response)
+        │
+        └─ DB (InMemoryDB / ShardedDB)
+                └─ LRU eviction + TTL background sweep + disk persistence
+```
 
-## 🚀 Getting Started
+### Design Patterns Used
 
-📦 1. Clone the Repository
+| Pattern | Where |
+|---|---|
+| **Command** | `Command<K,V>` interface; one class per operation |
+| **Factory Method** | `RespParser.parse()` dispatches by first byte; `DatabaseFactory` creates DB instances |
+| **Sealed Interface + Records** | `RespValue` type hierarchy — exhaustive pattern matching via `switch` |
+| **Facade** | `RespEncoder` — single API to encode any `RespValue` to a stream |
+| **Strategy** | `DB` interface with `InMemoryDB` and `ShardedDB` implementations |
+| **Singleton** | `Config`, `ThreadPoolManager` |
+
+### RESP Type Hierarchy
+
+```
+RespValue (sealed interface)
+├── SimpleString   →  +OK\r\n
+├── RespError      →  -ERR message\r\n
+├── RespInteger    →  :42\r\n
+├── BulkString     →  $6\r\nfoobar\r\n  (or $-1\r\n for nil)
+└── RespArray      →  *3\r\n...         (or *-1\r\n for nil)
+```
+
+---
+
+## Project Structure
+
+```
+quicksilver/
+├── src/main/java/io/github/udayhe/quicksilver/
+│   ├── Server.java                          # Entry point; wires DB, cluster, thread pool
+│   ├── client/
+│   │   └── ClientHandler.java               # Per-connection lifecycle; RESP parse/encode; cluster routing
+│   ├── cluster/
+│   │   ├── ClusterClient.java               # Inter-node RESP client (sendCommand / sendCommandWithResponse)
+│   │   ├── ClusterManager.java              # Node registry
+│   │   ├── ClusterNode.java                 # Record: host + port
+│   │   ├── ClusterService.java              # Cluster lifecycle and data sync
+│   │   └── ConsistentHashing.java           # TreeMap-based hash ring
+│   ├── command/
+│   │   ├── Command.java                     # Functional interface returning RespValue
+│   │   ├── CommandRegistry.java             # Dispatch table; case-insensitive lookup
+│   │   └── implementation/
+│   │       ├── Set.java                     # → SimpleString("OK")
+│   │       ├── Get.java                     # → BulkString | NIL
+│   │       ├── Del.java                     # → RespInteger(0|1)
+│   │       ├── Flush.java                   # → SimpleString("OK"); cluster broadcast
+│   │       ├── Dump.java                    # → BulkString (serialized store)
+│   │       ├── Subscribe.java               # → RespArray [subscribe, topic, count]
+│   │       ├── Unsubscribe.java             # → RespArray [unsubscribe, topic, count]
+│   │       ├── Publish.java                 # → RespInteger (delivery count)
+│   │       └── Exit.java                    # → SimpleString("BYE")
+│   ├── config/
+│   │   └── Config.java                      # Singleton; reads config.properties
+│   ├── db/
+│   │   ├── DB.java                          # Storage interface
+│   │   ├── DatabaseFactory.java             # Creates InMemoryDB or ShardedDB
+│   │   └── implementation/
+│   │       ├── InMemoryDB.java              # LinkedHashMap LRU + ScheduledExecutor TTL sweep
+│   │       └── ShardedDB.java               # N InMemoryDB shards; key → abs(hashCode) % N
+│   ├── pubsub/
+│   │   └── PubSubManager.java               # ConcurrentHashMap<topic, Set<OutputStream>>; dead-subscriber cleanup
+│   ├── resp/
+│   │   ├── RespParser.java                  # Stateful; handles RESP binary framing + inline plain-text
+│   │   ├── RespEncoder.java                 # Stateless; encode() (no flush) + write() (encode + flush)
+│   │   ├── RespException.java               # Protocol / security violation
+│   │   └── value/
+│   │       ├── RespValue.java               # Sealed interface
+│   │       ├── SimpleString.java            # Record; rejects CR/LF in value
+│   │       ├── RespError.java               # Record; factory methods err() / wrongArgs()
+│   │       ├── RespInteger.java             # Record
+│   │       ├── BulkString.java              # Record; overrides equals/hashCode for byte[]
+│   │       └── RespArray.java               # Record; nil sentinel
+│   ├── security/
+│   │   └── ConnectionLimits.java            # Protocol security constants
+│   ├── threads/
+│   │   └── ThreadPoolManager.java           # Singleton; cached thread pool with graceful shutdown
+│   └── util/
+│       ├── ClusterUtil.java
+│       └── Util.java
+└── src/main/resources/
+    └── config.properties
+```
+
+---
+
+## Getting Started
+
+### 1. Clone
+
 ```sh
 git clone https://github.com/UdayHE/Quicksilver.git
 cd Quicksilver
 ```
 
-🔧 2. Build the Project
+### 2. Build
+
 ```sh
 ./gradlew build
 ```
 
-⚡ 3. Run the Server
-```sh
-java -jar build/libs/Quicksilver-1.0-SNAPSHOT.jar
-```
+### 3. Run
 
-🔌 4. Default Port: `6379` <br>
-Set custom port:
 ```sh
+# Default port 6379
+java -jar build/libs/Quicksilver-1.0-SNAPSHOT.jar
+
+# Custom port
 java -jar build/libs/Quicksilver-1.0-SNAPSHOT.jar 7000
 ```
 
-## 🛠 Configuration
-Modify config.properties in src/main/resources/:
-```
-server.port=7000
-db.type=SHARDED
-shard.count=4
-shard.size=100
+### 4. Connect
+
+**redis-cli** (recommended — full RESP protocol):
+```sh
+redis-cli -p 6379
 ```
 
-## 📝 Commands
+**telnet / nc** (plain-text inline mode — backward compat):
+```sh
+telnet localhost 6379
+```
 
-| Command | Description | Examle |
-| ----- | ------ | ------ |
-|`SET key value` | Stores a value |SET username uday
-|`GET key` | Retrieves a value|GET username
-|`DEL key` | Deletes a key |DEL username
-|`FLUSH` | Clears all data |FLUSH
-|`EXIT` | Closes the connection|EXIT
-|`SUBSCRIBE topic` | Subscribes to a topic |SUBSCRIBE news
-|`UNSUBSCRIBE topic` | Unsubscribes from a topic |UNSUBSCRIBE news
-|`PUBLISH topic message` | Publishes a message to a topic |PUBLISH news "Breaking: ..."
+---
 
-## 🔗 Cluster Setup
+## Commands
 
-QuickSilver supports distributed clustering for high availability and horizontal scaling:
+| Command | Description | Response |
+|---|---|---|
+| `SET key value` | Store a value | `+OK` |
+| `GET key` | Retrieve a value | Bulk string or nil |
+| `DEL key` | Delete a key | `:1` (deleted) or `:0` (not found) |
+| `FLUSH` | Clear all data (cluster-wide) | `+OK` |
+| `DUMP` | Serialize entire store to a string | Bulk string |
+| `SUBSCRIBE topic` | Subscribe to a topic | Array `[subscribe, topic, count]` |
+| `UNSUBSCRIBE topic` | Unsubscribe from a topic | Array `[unsubscribe, topic, count]` |
+| `PUBLISH topic message` | Publish a message to a topic | `:N` (delivery count) |
+| `EXIT` | Close the connection | `+BYE` |
 
-### Starting Multiple Nodes
-```bash
-# Node 1 (Port 6379)
+### Examples (redis-cli)
+
+```
+127.0.0.1:6379> SET user:1001 "Alice"
+OK
+127.0.0.1:6379> GET user:1001
+"Alice"
+127.0.0.1:6379> DEL user:1001
+(integer) 1
+127.0.0.1:6379> GET user:1001
+(nil)
+
+# Pub/Sub (open two redis-cli sessions)
+# Session A:
+127.0.0.1:6379> SUBSCRIBE news
+# Session B:
+127.0.0.1:6379> PUBLISH news "Breaking: QuickSilver now speaks RESP"
+(integer) 1
+```
+
+---
+
+## Configuration
+
+Edit `src/main/resources/config.properties`:
+
+```properties
+server.port=6379
+db.type=SHARDED       # SHARDED or IN_MEMORY
+db.shard.total=4
+db.shard.size=100
+```
+
+---
+
+## Security Limits
+
+Enforced at the protocol layer in [`ConnectionLimits`](src/main/java/io/github/udayhe/quicksilver/security/ConnectionLimits.java):
+
+| Limit | Value |
+|---|---|
+| Max inline command bytes | 64 KB |
+| Max bulk-string size | 512 MB |
+| Max array elements | 1,048,576 |
+| Socket idle timeout | 5 minutes |
+| Max key size | 512 KB |
+
+---
+
+## Cluster Setup
+
+### Start multiple nodes
+
+```sh
 java -jar build/libs/Quicksilver-1.0-SNAPSHOT.jar 6379
-
-# Node 2 (Port 6380)  
 java -jar build/libs/Quicksilver-1.0-SNAPSHOT.jar 6380
-
-# Node 3 (Port 6381)
 java -jar build/libs/Quicksilver-1.0-SNAPSHOT.jar 6381
 ```
 
-### Cluster Features
-- **Automatic Discovery**: Nodes automatically discover and register with each other
-- **Data Synchronization**: Initial data sync across all cluster nodes on startup
-- **Consistent Hashing**: Keys are distributed across nodes using consistent hashing
-- **Load Distribution**: Client requests are automatically routed to the appropriate node
-- **Fault Tolerance**: Cluster continues operating even if individual nodes fail
+### How it works
 
-### Cluster Commands
-All standard database commands work in cluster mode:
-```bash
-# Connect to any node and commands will be routed appropriately
-telnet localhost 6379
-SET user:1001 "John Doe"
-GET user:1001
+- Nodes register in a **consistent hashing ring** on startup.
+- Each node syncs data from peers via RESP `DUMP` on startup.
+- `ClientHandler` computes the responsible node for every key. If the key belongs to another node, the request is forwarded transparently and the reply is relayed to the client.
+- `FLUSH` is broadcast to all nodes.
+
+```sh
+# Connect to any node — routing is automatic
+redis-cli -p 6379
+SET order:9001 "shipped"    # stored on whichever node owns this key
+GET order:9001              # routed to the same node automatically
 ```
 
-## 🔄 Sharding Configuration
+---
 
-Configure sharding in `config.properties`:
-```
+## Sharding
+
+Configure in `config.properties`:
+
+```properties
 db.type=SHARDED
 db.shard.total=4
 db.shard.size=100
 ```
 
-### Sharding Benefits
-- **Horizontal Scaling**: Distribute data across multiple shards
-- **Memory Efficiency**: Each shard has its own LRU cache
-- **Parallel Processing**: Operations can be performed in parallel across shards
-- **Consistent Performance**: Even distribution prevents hotspots
+Keys are routed to shards by `abs(key.hashCode()) % shardCount`. Each shard is an independent `InMemoryDB` with its own LRU cache and TTL sweep, enabling parallel in-process operations.
 
-## 📊 Performance Characteristics
+---
 
-### In-Memory Performance
-- **Sub-millisecond latency** for GET/SET operations
-- **High throughput** with thread pool optimization
-- **LRU eviction** prevents memory exhaustion
-- **TTL support** for automatic data expiration
+## Testing
 
-### Cluster Performance
-- **Linear scaling** with additional nodes
-- **Consistent hashing** minimizes data movement during scaling
-- **Network optimization** with efficient inter-node communication
-- **Load balancing** across cluster nodes
-
-## 🧪 Testing
-
-Run the test suite:
-```bash
+```sh
 ./gradlew test
+
+# Run only the RESP / command suite
+./gradlew test \
+  --tests "io.github.udayhe.quicksilver.command.CommandRegistryTest" \
+  --tests "io.github.udayhe.quicksilver.integration.ServerIntegrationTest"
 ```
 
-## 🐳 Docker Support
+---
 
-Build and run with Docker:
-```bash
-# Build the image
+## Docker
+
+```sh
+# Single instance
 docker build -t quicksilver .
-
-# Run a single instance
 docker run -p 6379:6379 quicksilver
 
-# Run multiple instances for clustering
-docker run -p 6379:6379 --name quicksilver-1 quicksilver
-docker run -p 6380:6379 --name quicksilver-2 quicksilver
+# Cluster (3 nodes)
+docker run -p 6379:6379 --name qs-1 quicksilver
+docker run -p 6380:6380 --name qs-2 quicksilver
+docker run -p 6381:6381 --name qs-3 quicksilver
 ```
 
-## 📜 License
-Apache License Version 2.0 <br>
-https://github.com/UdayHE/Quicksilver/blob/master/LICENSE
+---
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE)
