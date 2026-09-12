@@ -1,6 +1,7 @@
 package io.github.udayhe.quicksilver;
 
 import io.github.udayhe.quicksilver.client.ClientHandler;
+import io.github.udayhe.quicksilver.cluster.ClusterConnectionPool;
 import io.github.udayhe.quicksilver.cluster.ClusterService;
 import io.github.udayhe.quicksilver.config.Config;
 import io.github.udayhe.quicksilver.db.DB;
@@ -93,6 +94,8 @@ public class Server<K, V> {
                 log.info("💾 Saving Sharded DB before shutdown...");
                 shardedDB.saveToDisk(SHARDED_BACKUP);
             }
+            ClusterConnectionPool.getInstance().close();
+            log.info("✅ Cluster connection pool shut down successfully.");
             ThreadPoolManager.getInstance().shutdown();
             log.info("✅ Thread pool shut down successfully.");
         }));

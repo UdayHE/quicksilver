@@ -17,6 +17,7 @@ Because it speaks the Redis wire protocol, any Redis client — including `redis
 - **Sharding** — Distributes data across `N` in-memory shards
 - **Consistent Hashing** — Efficient key routing across cluster nodes with minimal rehashing
 - **Clustering** — Multi-node deployment with automatic data sync on startup
+- **Connection Pooling** — Apache Commons Pool2; persistent inter-node sockets with validation, idle eviction, and graceful drain on shutdown
 - **Pub/Sub** — Topic-based real-time message fan-out
 - **Persistence** — Save/restore the data set to/from disk
 - **Security limits** — Max key size, bulk-string size, array depth, and idle-timeout enforced at the protocol layer
@@ -38,7 +39,8 @@ Client (redis-cli / telnet / any RESP client)
         │       └─ Set / Get / Del / Flush / Dump / Subscribe / Unsubscribe / Publish / Exit
         │
         ├─ ClusterService    ← consistent-hashing ring; forwards to remote node if needed
-        │       └─ ClusterClient  ← inter-node RESP client (fire-and-forget / response)
+        │       └─ ClusterClient  ← inter-node RESP client (borrows pooled connection per call)
+        │               └─ ClusterConnectionPool  ← Commons Pool2; one GenericObjectPool per node
         │
         └─ DB (InMemoryDB / ShardedDB)
                 └─ LRU eviction + TTL background sweep + disk persistence
@@ -53,7 +55,8 @@ Client (redis-cli / telnet / any RESP client)
 | **Sealed Interface + Records** | `RespValue` type hierarchy — exhaustive pattern matching via `switch` |
 | **Facade** | `RespEncoder` — single API to encode any `RespValue` to a stream |
 | **Strategy** | `DB` interface with `InMemoryDB` and `ShardedDB` implementations |
-| **Singleton** | `Config`, `ThreadPoolManager` |
+| **Singleton** | `Config`, `ThreadPoolManager`, `ClusterConnectionPool` |
+| **Object Pool** | `ClusterConnectionPool` — `GenericObjectPool<ClusterConnection>` per node via Apache Commons Pool2 |
 
 ### RESP Type Hierarchy
 

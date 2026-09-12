@@ -23,4 +23,7 @@ public final class ConnectionLimits {
 
     /** Maximum key size in bytes (512 KB). */
     public static final int MAX_KEY_BYTES = 512 * 1024;
+
+    /** TCP connect timeout for inter-node cluster connections in milliseconds. */
+    public static final int CONNECT_TIMEOUT_MS = 5_000;
 }

@@ -22,6 +22,11 @@ application {
 
 dependencies {
     /* =======================
+       Apache Commons Pool2
+       ======================= */
+    implementation 'org.apache.commons:commons-pool2:2.12.0'
+
+    /* =======================
        JUnit 5
        ======================= */
     testImplementation platform('org.junit:junit-bom:5.10.1')

@@ -6,12 +6,7 @@ import io.github.udayhe.quicksilver.resp.value.BulkString;
 import io.github.udayhe.quicksilver.resp.value.RespArray;
 import io.github.udayhe.quicksilver.resp.value.RespValue;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Thin client for inter-node cluster communication.
+ * Thin client for internode cluster communication.
  *
  * All requests are encoded as RESP arrays; all responses are parsed via
  * {@link RespParser}.  A new TCP connection is opened per request (no pooling)
@@ -92,20 +87,28 @@ public class ClusterClient {
     // -------------------------------------------------------------------------
 
     private static RespValue execute(ClusterNode node, String... args) throws IOException {
-        try (Socket socket = new Socket(node.host(), node.port())) {
-            OutputStream out = new BufferedOutputStream(socket.getOutputStream());
-            InputStream  in  = new BufferedInputStream(socket.getInputStream());
-
-            RespEncoder.write(out, buildCommand(args));
-
-            RespParser parser = new RespParser(in);
-            RespValue  reply  = parser.parse();
+        ClusterConnectionPool pool = ClusterConnectionPool.getInstance();
+        ClusterConnection conn = null;
+        try {
+            conn = pool.borrow(node);
+            RespEncoder.write(conn.out(), buildCommand(args));
+            RespValue reply = new RespParser(conn.in()).parse();
             if (reply == null) {
+                pool.invalidate(node, conn);
+                conn = null;
                 throw new IOException("Node " + node + " closed connection without a response");
             }
             log.log(Level.INFO, "Response from node {0} for command {1}: {2}",
                     new Object[]{node, args[0], reply});
+            pool.release(node, conn);
+            conn = null;
             return reply;
+        } catch (IOException e) {
+            if (conn != null) pool.invalidate(node, conn);
+            throw e;
+        } catch (Exception e) {
+            if (conn != null) pool.invalidate(node, conn);
+            throw new IOException("Connection pool error for node " + node + ": " + e.getMessage(), e);
         }
     }
 
